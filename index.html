@@ -14,12 +14,27 @@
         <br><br>
         Which pipette should be used for 750 µL?
     </p>
+    
+<button onclick="wrongAnswer()">P20</button>
 
-    <button>P20</button>
+<button onclick="wrongAnswer()">P200</button>
 
-    <button>P200</button>
+<button onclick="correctAnswer()">P1000</button>
 
-    <button>P1000</button>
+<p id="result"></p>
+    
+<script>
 
+function correctAnswer() {
+    document.getElementById("result").innerHTML =
+    "✅ Correct! The demonstrator nods approvingly. +20 Competence";
+}
+
+function wrongAnswer() {
+    document.getElementById("result").innerHTML =
+    "💀 Critical Failure. The P20 has filed a formal complaint. -15 Reputation";
+}
+
+</script>
 </body>
 </html>
