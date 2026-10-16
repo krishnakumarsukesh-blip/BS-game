@@ -1,40 +1,24 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>BS1030 Practical Survival</title>
-</head>
-<body>
-
-    <h1>🧪 BS1030 Practical Survival</h1>
-
-    <p>Score: 0</p>
-
-    <p>
-        The demonstrator asks:
-        <br><br>
-        Which pipette should be used for 750 µL?
-    </p>
-    
-<button onclick="wrongAnswer()">P20</button>
-
-<button onclick="wrongAnswer()">P200</button>
-
-<button onclick="correctAnswer()">P1000</button>
-
-<p id="result"></p>
-    
-<script>
-
-function correctAnswer() {
-    document.getElementById("result").innerHTML =
-    "✅ Correct! The demonstrator nods approvingly. +20 Competence";
-}
-
-function wrongAnswer() {
-    document.getElementById("result").innerHTML =
-    "💀 Critical Failure. The P20 has filed a formal complaint. -15 Reputation";
-}
-
-</script>
-</body>
-</html>
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>BS1030 Practical Survival</title><style>
+:root{font:16px/1.5 system-ui,sans-serif;color:#142536;background:#eaf1f8}body{margin:0;padding:24px 14px}main{max-width:720px;margin:auto}h1{color:#102a43}.stats{display:flex;gap:10px}.stats p{flex:1;background:white;border-radius:12px;padding:12px;margin:8px 0}.card{background:#fffdf7;border:1px solid #d8e0e8;border-top:7px solid #1769aa;border-radius:16px;padding:clamp(20px,5vw,36px);margin:12px 0;box-shadow:0 8px 24px #102a4312}.muted{color:#526477}.q{font-size:clamp(21px,4vw,28px)}#options{display:grid;gap:10px}.option{padding:14px;text-align:left;background:white;border:2px solid #d8e0e8;border-radius:10px;font:inherit}.option:hover:not(:disabled){border-color:#1769aa}.correct{background:#dcfce7;border-color:#147d64}.wrong{background:#fee2e2;border-color:#b93838}#feedback{padding:14px;border-radius:10px;margin-top:14px;white-space:pre-line}.good{background:#dcfce7}.bad{background:#fee2e2}button.next{background:#102a43;color:white;border:0;border-radius:9px;padding:12px 18px;font:inherit;font-weight:800;cursor:pointer}button:focus-visible{outline:3px solid #f5c451}.hidden{display:none}#bar{height:8px;background:#dce4eb;border-radius:8px;overflow:hidden}#bar i{display:block;height:100%;background:#f5c451;width:0}@media(max-width:480px){.stats{gap:4px}.stats p{padding:8px;font-size:14px}}
+</style></head><body><main><h1>🧪 BS1030 Practical Survival</h1><p class="muted">Answer the demonstrator. Protect your competence. Try not to make the pipettes unionise.</p><div class="stats"><p>Competence<br><b id="score">0</b></p><p>Reputation<br><b id="rep">100</b></p><p>Streak<br><b id="streak">0</b></p></div><div id="bar"><i id="progress"></i></div><section id="game" class="card" aria-live="polite"><b id="meta"></b><h2 class="q" id="question"></h2><div id="options"></div><div id="feedback" class="hidden" role="status"></div><p><button id="next" class="next" disabled>Choose an answer</button></p></section><section id="finish" class="card hidden" aria-live="polite"></section><p class="muted">Questions adapted from the BS Study Hub. The answer choices are shuffled each time.</p></main><script>
+const Q=[
+["BS1030 · Practical skills","Which pipette should be used for 750 µL?",["P20","P200","P1000"],"P1000","750 µL is within the P1000 range. The P20 and P200 would be operating beyond their limits, which is how a pipette develops a grudge."],
+["BS1040 · Membrane transport","Why do phospholipids spontaneously form bilayers in water?",["Their hydrophilic tails bind one another covalently","Their hydrophobic tails cluster away from water while hydrophilic heads face water","Their phosphate groups move into the bilayer centre","Every phospholipid is permanently attached to a membrane protein"],"Their hydrophobic tails cluster away from water while hydrophilic heads face water","Hydrophobic tails avoid water while hydrophilic heads interact with it. No tiny membrane construction crew required."],
+["BS1040 · Osmosis","A cell is transferred to a hypotonic solution. What happens first?",["Water leaves and the cell shrinks","Water enters and the cell swells","K+ enters and water follows immediately","The membrane becomes impermeable to water"],"Water enters and the cell swells","Water moves into the cell by osmosis, so it swells. It does not politely shrink."],
+["BS1040 · Cell volume","During regulatory volume decrease, why does loss of intracellular K+ help a swollen cell recover?",["It raises intracellular osmolality","It lowers intracellular osmolality so water can leave","It directly digests excess water","It makes the membrane completely rigid"],"It lowers intracellular osmolality so water can leave","Losing K+ lowers intracellular osmolality, allowing water to leave. K+ is changing the osmotic balance, not eating water."],
+["BS1040 · Aquaporins","The osmotic gradient is unchanged, but more aquaporins are inserted into the membrane. What is most likely?",["Water permeability and water flux increase","Water permeability decreases but flux increases","Only solute permeability increases","No membrane property changes"],"Water permeability and water flux increase","More aquaporins provide more water channels, increasing water permeability and flux."],
+["BS1040 · Membrane transport","Which statement distinguishes water flux from membrane permeability?",["Flux is a membrane property; permeability is the driving force","Flux is movement per unit time; permeability describes how readily the membrane permits movement","They are identical terms","Permeability always increases when osmolality increases"],"Flux is movement per unit time; permeability describes how readily the membrane permits movement","Flux is movement per unit time. Permeability describes how readily the membrane allows movement. Biology does enjoy paperwork."],
+["BS1040 · Transporters","An inhibitor blocks ATP hydrolysis by an ABC transporter. What is the direct consequence?",["Transport driven by that ABC protein decreases or stops","Passive diffusion through the bilayer accelerates","All membrane proteins are degraded","The transported solute becomes ATP"],"Transport driven by that ABC protein decreases or stops","ABC transporters use ATP hydrolysis to drive transport. The cargo does not turn into ATP."],
+["BS1040 · Endocytosis","A receptor-bound ligand is internalised by receptor-mediated endocytosis. Which compartment does it usually enter first?",["Nucleus","Early endosome","Mitochondrial matrix","Golgi trans face"],"Early endosome","The internalised receptor and ligand usually arrive first in an early endosome. The nucleus is not a parcel depot."],
+["BS1040 · Receptor recycling","Which route best describes recycling of an internalised plasma-membrane receptor?",["Early endosome → recycling endosome → plasma membrane","Lysosome → nucleus → plasma membrane","ER → lysosome → mitochondrion","Plasma membrane → nucleolus → Golgi"],"Early endosome → recycling endosome → plasma membrane","Receptors can pass through a recycling endosome and return to the plasma membrane. The nucleolus is not on this commute."],
+["BS1040 · Endocytic pathway","Which sequence best represents a common degradative endocytic pathway?",["Plasma membrane → early endosome → late endosome → lysosome","Plasma membrane → nucleus → peroxisome","Golgi → ribosome → lysosome","Early endosome → ER → chloroplast"],"Plasma membrane → early endosome → late endosome → lysosome","The common route is plasma membrane, early endosome, late endosome, then lysosome. The cell has a sorting system, not a random satnav."],
+["BS1040 · Cell signalling","A signalling response starts normally but stays active much longer than usual. Which defect best explains this?",["Excessive negative feedback","Loss of negative feedback or pathway deactivation","Complete absence of receptors","Failure to produce the initial signal"],"Loss of negative feedback or pathway deactivation","If the pathway cannot be switched down, the response persists. Loss of negative feedback fits the evidence." ]
+];
+let n=0,score=0,rep=100,streak=0,locked=false;const el=id=>document.getElementById(id);
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function show(){if(n===Q.length){end();return}locked=false;let q=Q[n];el("meta").textContent="Question "+(n+1)+" of "+Q.length+" · "+q[0];el("question").textContent=q[1];el("progress").style.width=(100*n/Q.length)+"%";el("feedback").className="hidden";el("feedback").textContent="";el("next").disabled=true;el("next").textContent="Choose an answer";el("options").replaceChildren();shuffle(q[2]).forEach(a=>{let b=document.createElement("button");b.className="option";b.textContent=a;b.onclick=()=>answer(b,a,q);el("options").append(b)})}
+function answer(btn,a,q){if(locked)return;locked=true;let ok=a===q[3];[...el("options").children].forEach(b=>{b.disabled=true;if(b.textContent===q[3])b.classList.add("correct")});let f=el("feedback");f.className=ok?"good":"bad";if(ok){score+=20;streak++;let bonus=streak%3===0?10:0;score+=bonus;f.innerHTML="<b>✅ Correct! The demonstrator nods approvingly. +20 Competence"+(bonus?" and +10 streak bonus":"")+".</b>"+q[4]}else{btn.classList.add("wrong");rep=Math.max(0,rep-15);streak=0;f.innerHTML="<b>💀 Critical failure. -15 Reputation. "+(n===0?"The P20 has filed a formal complaint.":"The demonstrator makes a note. The lab coat has seen worse.")+"</b>"+q[4]}el("score").textContent=score;el("rep").textContent=rep;el("streak").textContent=streak;el("next").disabled=false;el("next").textContent=n===Q.length-1?"See your fate":"Next question"}
+function end(){el("game").classList.add("hidden");el("finish").classList.remove("hidden");el("progress").style.width="100%";let rank=rep===0?"The lab has revoked your visitor badge.":score>=220?"The demonstrator asks if you can cover next week's practical.":score>=140?"Survival looks increasingly plausible.":"You lived. The pipettes remain unconvinced.";el("finish").innerHTML="<h2>Practical complete</h2><p>"+rank+"</p><p>You earned <b>"+score+" Competence</b>, finished with <b>"+rep+" Reputation</b>, and reached a streak of <b>"+streak+"</b>.</p><button id='restart' class='next'>Run it back</button>";el("restart").onclick=()=>{n=0;score=0;rep=100;streak=0;el("score").textContent=0;el("rep").textContent=100;el("streak").textContent=0;el("finish").classList.add("hidden");el("game").classList.remove("hidden");show()}}
+el("next").onclick=()=>{if(locked){n++;show()}};show();
+</script></body></html>
