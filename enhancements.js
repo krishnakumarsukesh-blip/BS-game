@@ -80,6 +80,13 @@
     .daily>p{margin:8px 0 14px}
     .daily>.eyebrow{font-size:14px}
     .daily #dailyStart{min-height:46px;padding:12px 20px;font-size:1.02rem}
+    .before-tomorrow-link{display:flex;align-items:center;gap:12px;margin:12px 0;padding:14px 16px;border:1px solid #c9dce8;border-radius:12px;background:#f4f9fc;color:#102a43;text-decoration:none;transition:border-color .15s ease,transform .15s ease}
+    .before-tomorrow-link:hover{border-color:#1769aa;transform:translateY(-1px)}
+    .before-tomorrow-link>span:first-child{font-size:24px}
+    .before-tomorrow-link>span:last-child{margin-left:auto;color:#1769aa;font-size:20px}
+    .before-tomorrow-link b,.before-tomorrow-link small{display:block}
+    .before-tomorrow-link small{margin-top:2px;color:#526477}
+    @media(prefers-reduced-motion:reduce){.before-tomorrow-link{transition:none}}
     .campaign-details{margin:10px 0;border:1px solid #d8e0e8;border-radius:13px;background:#f5f8fb}
     .campaign-details>summary{cursor:pointer;list-style:none;padding:12px 15px;color:#1769aa;font-weight:850}
     .campaign-details>summary::-webkit-details-marker{display:none}

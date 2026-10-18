@@ -14,3 +14,7 @@ Open `index.html` in a browser to play. To use Clerk sign-in and sync, serve the
 - The three-chapter Missing-Label Mystery: short, repeatable investigation sessions where correct answers uncover clues and mistakes come with explanations instead of penalties. Story progress is saved locally, included in progress exports, and synced when signed in.
 
 Sign-in and account management are provided by Clerk and are optional. Scores and revision progress sync to your account when signed in, but the leaderboard remains personal and there is no shared online leaderboard.
+
+## Before Tomorrow
+
+The [Before Tomorrow practical companion](./before-tomorrow/) collects clearly labelled student preparation tips, questions, useful tools, and revision concepts. Its included content is fictional placeholder material until replaced with verified student contributions; it is not course guidance.
