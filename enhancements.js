@@ -735,45 +735,57 @@
 
   const accountStyles = document.createElement("style");
   accountStyles.textContent = `
-    .account-card{margin:0 0 18px;padding:16px;border:1px solid #d8e0e8;border-radius:12px;background:#fff}
-    .account-card h2{margin:0;color:#102a43;font-size:19px}
-    .account-card p{margin:5px 0;color:#526477}
-    .account-card .account-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px}
-    .account-card #account-user-button{min-height:40px}
-    .account-card #account-sign-in{flex-basis:100%;margin-top:8px}
-    .account-card #account-status{font-size:14px}
+    .account-toolbar{position:sticky;top:8px;z-index:1000;display:flex;justify-content:flex-end;align-items:center;gap:10px;min-height:40px;margin:-10px 0 8px;pointer-events:none}
+    .account-toolbar .account-actions,.account-toolbar #account-user-button{display:flex;align-items:center;gap:8px;pointer-events:auto}
+    .account-toolbar [hidden]{display:none!important}
+    .account-toolbar button{min-height:38px;padding:7px 12px;border:1px solid #c9dce8;border-radius:10px;background:#fff;color:#102a43;font:inherit;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 3px 12px #102a4315}
+    .account-toolbar button:disabled{opacity:.65;cursor:wait}
+    .account-toolbar button:hover{border-color:#1769aa;background:#f4f9fc}
+    .account-toolbar button:focus-visible{outline:3px solid #f5c451;outline-offset:2px}
+    .account-toolbar .account-status{position:absolute;right:0;top:calc(100% + 4px);max-width:min(90vw,420px);padding:6px 10px;border-radius:8px;background:#102a43;color:#fff;font-size:13px;text-align:right;box-shadow:0 3px 12px #102a4325}
+    .account-toolbar .account-status:empty{display:none}
+    .account-toolbar .account-status[data-error="true"]{background:#8b2424}
+    @media(max-width:480px){.account-toolbar{top:4px;margin:-8px 0 6px}.account-toolbar button{min-height:36px;padding:6px 9px;font-size:12px}.account-toolbar .account-actions{gap:5px}}
   `;
   document.head.append(accountStyles);
 
-  const accountCard = document.createElement("section");
-  accountCard.className = "account-card";
-  accountCard.setAttribute("aria-labelledby", "account-heading");
-  accountCard.innerHTML = `
-    <h2 id="account-heading">Optional learning account</h2>
-    <p>Sign in or create an account with Clerk. The game works without signing in.</p>
-    <div class="account-controls">
-      <button id="account-open-sign-in" class="next" type="button">Sign in or create an account</button>
-      <div id="account-user-button" hidden></div>
-      <div id="account-sign-in" hidden></div>
+  const accountToolbar = document.createElement("nav");
+  accountToolbar.className = "account-toolbar";
+  accountToolbar.setAttribute("aria-label", "Learning account");
+  accountToolbar.innerHTML = `
+    <div class="account-actions">
+      <button id="account-open-sign-in" type="button" disabled>Back for another practical?</button>
+      <button id="account-open-sign-up" type="button" disabled>New here? Sign up before the pipettes notice</button>
     </div>
-    <p id="account-status" role="status" aria-live="polite">Connecting to Clerk…</p>
-    <p class="small">Scores and revision progress are still stored in this browser; signing in does not sync them.</p>
+    <div id="account-user-button" hidden></div>
+    <span id="account-status" class="account-status" role="status" aria-live="polite">Connecting to Clerk…</span>
   `;
-  homeCard.querySelector(".lobby-content").prepend(accountCard);
+  homeCard.before(accountToolbar);
 
-  const accountStatus = accountCard.querySelector("#account-status");
-  const signInButton = accountCard.querySelector("#account-open-sign-in");
-  const signInContainer = accountCard.querySelector("#account-sign-in");
-  const userButtonContainer = accountCard.querySelector("#account-user-button");
+  const accountStatus = accountToolbar.querySelector("#account-status");
+  const accountActions = accountToolbar.querySelector(".account-actions");
+  const signInButton = accountToolbar.querySelector("#account-open-sign-in");
+  const signUpButton = accountToolbar.querySelector("#account-open-sign-up");
+  const userButtonContainer = accountToolbar.querySelector("#account-user-button");
   const publishableKey = "pk_test_aWRlYWwtcHVtYS0zNDcwLmNsZXJrLmFjY291bnRzLmRldiQ";
   const clerkOrigin = "https://ideal-puma-3470.clerk.accounts.dev";
+  const syncedProgressField = "practicalSurvivalProgress";
+  const maxSyncedMetadataBytes = 7500;
   let clerk;
-  let signInMounted = false;
   let userButtonMounted = false;
+  let activeUser = null;
+  let applyingSyncedProgress = false;
+  let syncTimer = 0;
+  let syncRunning = false;
+  let syncPending = false;
+  let lastCloudWriteAt = 0;
+  const minCloudWriteInterval = 5000;
+  const progressKeys = new Set(TRANSFER_KEYS);
 
   function showAccountError(error) {
-    accountStatus.textContent = "Sign-in could not load. The game is still available; check your connection and reload to try again.";
-    console.error("Clerk account setup failed:", error);
+    accountStatus.dataset.error = "true";
+    accountStatus.textContent = `Account or progress sync problem: ${error.message || "check your connection and try again"}. Your local progress is still here.`;
+    console.error("Clerk account or progress sync failed.", error);
   }
 
   function loadClerkScript(src, key) {
@@ -788,52 +800,239 @@
     });
   }
 
+  function showAccountStatus(message) {
+    accountStatus.dataset.error = "false";
+    accountStatus.textContent = message;
+  }
+
   function renderAccount(user) {
     try {
       if (user) {
-        if (signInMounted) {
-          clerk.unmountSignIn(signInContainer);
-          signInMounted = false;
-        }
-        signInContainer.hidden = true;
-        signInButton.hidden = true;
+        const newUser = activeUser?.id !== user.id;
+        activeUser = user;
+        accountActions.hidden = true;
         userButtonContainer.hidden = false;
-        accountStatus.textContent = `Signed in as ${user.firstName || user.username || user.primaryEmailAddress?.emailAddress || "a Clerk user"}.`;
         if (!userButtonMounted) {
           clerk.mountUserButton(userButtonContainer);
           userButtonMounted = true;
         }
+        if (newUser) {
+          lastCloudWriteAt = 0;
+          showAccountStatus("Signed in. The demonstrator is checking your clipboard…");
+          queueProgressSync();
+        }
         return;
       }
 
+      activeUser = null;
       if (userButtonMounted) {
         clerk.unmountUserButton(userButtonContainer);
         userButtonMounted = false;
       }
       userButtonContainer.hidden = true;
-      signInButton.hidden = false;
-      accountStatus.textContent = "Your account is optional; your game progress stays in this browser.";
+      accountActions.hidden = false;
+      showAccountStatus("");
     } catch (error) {
       showAccountError(error);
     }
   }
 
-  signInButton.addEventListener("click", () => {
+  signInButton.addEventListener("click", async () => {
     try {
-      signInContainer.hidden = false;
-      if (!signInMounted) {
-        clerk.mountSignIn(signInContainer);
-        signInMounted = true;
-      }
-      accountStatus.textContent = "Sign in or create an account using the form below.";
+      await clerk.openSignIn();
     } catch (error) {
       showAccountError(error);
     }
   });
 
+  signUpButton.addEventListener("click", async () => {
+    try {
+      await clerk.openSignUp();
+    } catch (error) {
+      showAccountError(error);
+    }
+  });
+
+  function parseCloudProgress(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+      throw new Error("The saved Clerk progress has an invalid format.");
+    }
+    if (new TextEncoder().encode(JSON.stringify(value)).length > maxSyncedMetadataBytes) {
+      throw new Error("The saved Clerk progress is larger than the supported sync limit.");
+    }
+
+    const clean = {};
+    for (const key of TRANSFER_KEYS) {
+      if (!(key in value)) continue;
+      const item = value[key];
+      const isRecord = item !== null && typeof item === "object" && !Array.isArray(item);
+      const valid = key === STORE
+        ? Array.isArray(item) && item.length <= 10 && item.every(run => run && typeof run === "object" && Number.isFinite(run.score) && Number.isFinite(run.streak) && typeof run.date === "string" && typeof run.mode === "string")
+        : key === ACH
+          ? isRecord && Object.values(item).every(date => typeof date === "string")
+          : key === STATS
+            ? isRecord && Object.values(item).every(stat => ["string", "number", "boolean"].includes(typeof stat) && (typeof stat !== "number" || Number.isFinite(stat)))
+            : key === DAILYDONE
+              ? typeof item === "string" && /^\d{4}-\d{2}-\d{2}$/.test(item)
+              : key === RESIT
+                ? Array.isArray(item) && item.length <= 200 && item.every(question => typeof question === "string" && question.length <= 500)
+                : key === ATT
+                  ? isRecord && ["n", "best", "cl"].every(field => item[field] === undefined || Number.isFinite(item[field])) && (item.last === undefined || typeof item.last === "string")
+                  : key === campaignKey
+                    ? isRecord && Number.isInteger(item.chapter) && item.chapter >= 0 && item.chapter <= 3 && Number.isInteger(item.clues) && item.clues >= 0 && item.clues <= 3 && Number.isInteger(item.totalClues) && item.totalClues >= 0 && item.totalClues <= 9
+                    : false;
+      if (!valid) {
+        console.warn(`Ignoring invalid Clerk progress field "${key}".`);
+        continue;
+      }
+      clean[key] = item;
+    }
+    return clean;
+  }
+
+  function readLocalProgress() {
+    const progress = {};
+    for (const key of TRANSFER_KEYS) {
+      const raw = localStorage.getItem(key);
+      if (raw === null) continue;
+      try {
+        progress[key] = JSON.parse(raw);
+      } catch (error) {
+        throw new Error(`Could not sync "${key}" because its local saved data is invalid.`, { cause: error });
+      }
+    }
+    return progress;
+  }
+
+  function questionIdHash(questionId) {
+    let hash = 2166136261;
+    for (let i = 0; i < questionId.length; i++) {
+      hash = Math.imul(hash ^ questionId.charCodeAt(i), 16777619);
+    }
+    return (hash >>> 0).toString(36);
+  }
+
+  function compactResit(questionIds) {
+    const questionIdsByHash = new Map();
+    ALL().forEach(question => {
+      const hash = questionIdHash(question[1]);
+      const matches = questionIdsByHash.get(hash) || new Set();
+      matches.add(question[1]);
+      questionIdsByHash.set(hash, matches);
+    });
+
+    return questionIds.map(questionId => {
+      const hash = questionIdHash(questionId);
+      const matchingQuestions = questionIdsByHash.get(hash);
+      return matchingQuestions?.size === 1 && matchingQuestions.has(questionId)
+        ? `@${hash}`
+        : `!${encodeURIComponent(questionId)}`;
+    });
+  }
+
+  function expandResit(questionRefs) {
+    const questionIdsByHash = new Map();
+    ALL().forEach(question => questionIdsByHash.set(questionIdHash(question[1]), question[1]));
+    return questionRefs.flatMap(reference => {
+      if (reference.startsWith("!")) {
+        try {
+          return [decodeURIComponent(reference.slice(1))];
+        } catch (error) {
+          console.warn("Ignoring a malformed saved re-sit question reference.", error);
+          return [];
+        }
+      }
+      if (!reference.startsWith("@")) return [reference];
+      const questionId = questionIdsByHash.get(reference.slice(1));
+      if (!questionId) {
+        console.warn(`Ignoring a saved re-sit question that is not in the current question bank: "${reference}".`);
+        return [];
+      }
+      return [questionId];
+    });
+  }
+
+  function compactProgress(progress) {
+    return {
+      ...progress,
+      ...(Array.isArray(progress[RESIT]) ? { [RESIT]: compactResit(progress[RESIT]) } : {})
+    };
+  }
+
+  function queueProgressSync() {
+    if (!activeUser) return;
+    syncPending = true;
+    if (lastCloudWriteAt && !syncRunning) {
+      showAccountStatus("Progress saved. The demonstrator will file it after a short pause…");
+    }
+    window.clearTimeout(syncTimer);
+    const throttleDelay = Math.max(0, minCloudWriteInterval - (Date.now() - lastCloudWriteAt));
+    syncTimer = window.setTimeout(runProgressSync, Math.max(1000, throttleDelay));
+  }
+
+  async function runProgressSync() {
+    if (!activeUser || syncRunning) return;
+    syncRunning = true;
+    syncPending = false;
+    const user = activeUser;
+    try {
+      const remote = user.unsafeMetadata?.[syncedProgressField];
+      if (remote !== undefined) {
+        const cleanedRemote = parseCloudProgress(remote);
+        if (Array.isArray(cleanedRemote[RESIT])) {
+          cleanedRemote[RESIT] = expandResit(cleanedRemote[RESIT]);
+        }
+        applyingSyncedProgress = true;
+        try {
+          mergeProgress(Object.fromEntries(Object.entries(cleanedRemote).map(([key, value]) => [key, JSON.stringify(value)])));
+        } finally {
+          applyingSyncedProgress = false;
+        }
+      }
+
+      const progress = parseCloudProgress(readLocalProgress());
+      const cloudProgress = compactProgress(progress);
+      const progressSize = new TextEncoder().encode(JSON.stringify(cloudProgress)).length;
+      if (progressSize > maxSyncedMetadataBytes) {
+        throw new Error("Your progress is too large to fit in Clerk's 8 KB metadata limit. It remains saved in this browser.");
+      }
+
+      const updatedMetadata = { ...user.unsafeMetadata, [syncedProgressField]: cloudProgress };
+      if (new TextEncoder().encode(JSON.stringify(updatedMetadata)).length > maxSyncedMetadataBytes) {
+        throw new Error("Your Clerk account's metadata is too close to its 8 KB limit to sync this progress.");
+      }
+
+      if (JSON.stringify(remote) !== JSON.stringify(cloudProgress)) {
+        await user.updateMetadata({ unsafeMetadata: { [syncedProgressField]: cloudProgress } });
+        lastCloudWriteAt = Date.now();
+      }
+      showAccountStatus("Progress synced. The demonstrator has filed your clipboard under “not lost this time”.");
+    } catch (error) {
+      showAccountError(error);
+    } finally {
+      syncRunning = false;
+      if (syncPending) queueProgressSync();
+    }
+  }
+
+  const originalSetItem = Storage.prototype.setItem;
+  Storage.prototype.setItem = function (key, value) {
+    originalSetItem.call(this, key, value);
+    if (this === window.localStorage && progressKeys.has(String(key)) && !applyingSyncedProgress) {
+      queueProgressSync();
+    }
+  };
+
+  window.addEventListener("storage", event => {
+    if (event.storageArea === window.localStorage && progressKeys.has(event.key)) {
+      queueProgressSync();
+    }
+  });
+
   async function initializeClerk() {
     if (location.protocol === "file:") {
-      accountStatus.textContent = "To use Clerk sign-in, open the game over localhost or HTTPS. The game still works from this file.";
+      accountActions.hidden = false;
+      showAccountStatus("Sign-in needs localhost or HTTPS; the practical still works from this file.");
       return;
     }
 
@@ -843,10 +1042,10 @@
     if (!clerk) throw new Error("The Clerk JavaScript SDK did not initialize.");
 
     await clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    signInButton.disabled = false;
+    signUpButton.disabled = false;
     renderAccount(clerk.user);
-    clerk.addListener(({ user }) => {
-      if (user !== undefined) renderAccount(user);
-    }, { skipInitialEmit: true });
+    clerk.addListener(({ user }) => renderAccount(user === undefined ? clerk.user : user), { skipInitialEmit: true });
   }
 
   initializeClerk().catch(showAccountError);
