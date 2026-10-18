@@ -4,7 +4,7 @@
   const DISCLAIMER = "These tips are reminders, not official instructions. For assessment requirements, methods and safety, follow your current module brief and teaching team.";
   const CONFIDENCE = {
     checked: ["Course-checked", "Matches current course material"],
-    personal: ["Notebook tip", "A practical reminder to keep in mind"],
+    personal: ["Field note", "A reminder passed on for the next student"],
     outdated: ["Worth rechecking", "The course or software may have changed"]
   };
   const TYPES = ["note", "why", "tool"];
@@ -56,7 +56,7 @@
   }
 
   function addProblem(problems, scope, field, message) {
-    problems.push(scope + ": " + field + " — " + message);
+    problems.push(scope + ": " + field + ": " + message);
   }
 
   function validateData() {
@@ -342,17 +342,17 @@
     const fragment = document.createDocumentFragment();
     const hero = element("section", { className: "notebook-hero" });
     const introduction = element("div", { className: "notebook-introduction" }, [
-      text("p", "A NOTEBOOK FOR THE NEXT LAB", "eyebrow"),
+      text("p", "FIELD NOTES FOR THE NEXT COHORT", "eyebrow"),
       text("h1", "Before Tomorrow"),
-      text("p", "Find a task, catch the easy-to-miss details, and carry a useful tip into your next session.", "subtitle"),
+      text("p", "The demonstrator set the level. The last cohort left clues. Pick a page and see what helps you make it through.", "subtitle"),
       createDisclaimer()
     ]);
     const story = notebookStoryDialog();
     const cover = element("div", { className: "notebook-cover" }, [
       text("span", "FIELD NOTES", "cover-kicker"),
       text("span", "✳", "cover-mark"),
-      text("span", "For the next pair of hands", "cover-caption"),
-      element("button", { type: "button", className: "notebook-open", text: "Open the notebook" })
+      text("span", "Beat the level. Pass it on.", "cover-caption"),
+      element("button", { type: "button", className: "notebook-open", text: "Read the field notes" })
     ]);
     cover.querySelector("button").addEventListener("click", function () {
       if (typeof story.showModal === "function") story.showModal();
@@ -364,17 +364,19 @@
     if (message) fragment.appendChild(element("p", { className: "status", role: "status", text: message }));
 
     fragment.appendChild(element("div", { className: "section-heading" }, [
-      text("p", "BROWSE YOUR MODULE", "eyebrow"),
-      text("h2", "What are you working on?")
+      text("p", "CHOOSE YOUR NEXT LEVEL", "eyebrow"),
+      text("h2", "Where are you headed?")
     ]));
     state.modules.forEach(function (module) {
       const section = element("section", { className: "module-block" });
       section.appendChild(element("div", { className: "module-heading" }, [
-        text("span", "MODULE NOTEBOOK", "module-kicker"),
+        text("span", module.id === "study-skills" ? "NOTES FOR EVERY LEVEL" : "MODULE LEVELS", "module-kicker"),
         text("h3", module.title)
       ]));
       const areas = element("div", { className: "area-grid" });
-      state.areas.forEach(function (area) {
+      state.areas.filter(function (area) {
+        return state.tasks.some(function (task) { return task.module === module.id && task.area === area.id; });
+      }).forEach(function (area) {
         const tasks = state.tasks.filter(function (task) { return task.module === module.id && task.area === area.id; });
         const noteCount = state.entries.filter(function (entry) {
           return tasks.some(function (task) { return task.id === entry.task; });
@@ -409,15 +411,15 @@
     const close = element("form", { method: "dialog", className: "dialog-actions" }, [
       element("button", { type: "submit", text: "Tuck this note away" })
     ]);
-    dialog.appendChild(text("p", "A little lab folklore", "eyebrow"));
+    dialog.appendChild(text("p", "FIELD REPORTS FROM THE LAST COHORT", "eyebrow"));
     dialog.appendChild(element("h2", {
       id: "notebook-story-title",
       tabindex: "-1",
       autofocus: true,
-      text: "A notebook passed hand to hand"
+      text: "Notes from those who came before"
     }));
-    dialog.appendChild(text("p", "Imagine a notebook passed from one pair of hands to the next. Its pages are not another copy of the protocol; they hold the small moments that can change how a result reads: a late measurement, a tube that looks just like its neighbour, or one point that refuses to fit."));
-    dialog.appendChild(text("p", "Each tip gives you a pause point: what might go wrong, why it matters, and what to check before you move on. Take what helps, keep your own notes however you like, and let your current module brief and demonstrator lead on methods and safety."));
+    dialog.appendChild(text("p", "The story goes that every practical is a special level, and the demonstrator is the final boss. The students who did not survive the run left warnings for the next cohort: small traps, false trails and details that are easy to miss when the timer is ticking."));
+    dialog.appendChild(text("p", "These pages hold clues, not a substitute for your protocol. Pick up a tip, beat the level, and leave a better clue for the next student. It is only a story. For real methods, assessment rules and safety, follow your module team."));
     dialog.appendChild(close);
     dialog.addEventListener("cancel", function (event) {
       event.preventDefault();
@@ -579,7 +581,7 @@
     fragment.appendChild(createDisclaimer());
 
     const sections = [
-      [notes, "notes", "Easy-to-miss moments"],
+      [notes, "notes", "Notes from the last run"],
       [questions, "questions", "Questions to think about"],
       [tools, "tools", "Useful tools"]
     ];
@@ -695,7 +697,7 @@
 
   function renderFooter() {
     clear(siteFooter);
-    siteFooter.appendChild(text("p", "Small details can make the next lab easier."));
+    siteFooter.appendChild(text("p", "Clear the level. Leave a better note for whoever comes next."));
   }
 
   function showDebug() {
@@ -751,7 +753,7 @@
     app.appendChild(element("p", {
       className: "fatal",
       role: "alert",
-      text: "Something went wrong loading this page. Refresh to try again; if the problem continues, check the practical data."
+      text: "Something went wrong loading this page. Refresh to try again; if the problem continues, check the notebook data."
     }));
   }
 

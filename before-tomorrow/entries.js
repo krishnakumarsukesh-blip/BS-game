@@ -2,7 +2,8 @@
 
 const BT_MODULES = [
   { id: "bs1030", title: "BS1030" },
-  { id: "bs1040", title: "BS1040" }
+  { id: "bs1040", title: "BS1040" },
+  { id: "study-skills", title: "Shared field guide" }
 ];
 
 const BT_AREAS = [
@@ -11,7 +12,8 @@ const BT_AREAS = [
   { id: "assignments", title: "Assignments", description: "Coursework, reports and projects", mark: "▤" },
   { id: "graphs-data", title: "Graphs & data", description: "Presenting results and spotting patterns", mark: "⌁" },
   { id: "calculations", title: "Calculations", description: "Working through the numbers", mark: "∑" },
-  { id: "software", title: "Software & coding", description: "Programs, workflows and troubleshooting", mark: "⌘" }
+  { id: "software", title: "Software & coding", description: "Programs, workflows and troubleshooting", mark: "⌘" },
+  { id: "revision-exams", title: "Revision & exams", description: "Recall, exam questions and last-minute checks", mark: "✦" }
 ];
 
 const BT_TASKS = [
@@ -103,6 +105,78 @@ const BT_TASKS = [
     order: 5,
     title: "Practical 5: Growth rates & motility",
     description: "Tracking bacterial growth and observing motility.",
+    concepts: []
+  },
+  {
+    id: "study-essay-paragraphs",
+    module: "study-skills",
+    area: "essays",
+    order: 1,
+    title: "Evidence-led paragraphs",
+    description: "Build a clear point from the marking guide, evidence and your explanation.",
+    concepts: []
+  },
+  {
+    id: "study-scientific-summaries",
+    module: "study-skills",
+    area: "essays",
+    order: 2,
+    title: "Research papers & summaries",
+    description: "Find the question, evidence and limits without retelling the whole paper.",
+    concepts: []
+  },
+  {
+    id: "study-referencing",
+    module: "study-skills",
+    area: "assignments",
+    order: 1,
+    title: "References that can be found",
+    description: "Keep track of sources as you work, not in a last-minute scramble.",
+    concepts: []
+  },
+  {
+    id: "study-ai-for-learning",
+    module: "study-skills",
+    area: "assignments",
+    order: 2,
+    title: "Using AI to practise",
+    description: "Use it to test your understanding, while keeping assessed work your own.",
+    concepts: []
+  },
+  {
+    id: "study-calculation-checks",
+    module: "study-skills",
+    area: "calculations",
+    order: 1,
+    title: "A reliable calculation",
+    description: "Check the units and scale before trusting the calculator.",
+    concepts: []
+  },
+  {
+    id: "study-active-recall",
+    module: "study-skills",
+    area: "revision-exams",
+    order: 1,
+    title: "Recall that builds understanding",
+    description: "Go beyond remembering a fact: explain it, then use it.",
+    concepts: []
+  },
+  {
+    id: "study-multiple-choice",
+    module: "study-skills",
+    area: "revision-exams",
+    order: 2,
+    title: "Multiple-choice questions",
+    description: "Catch the wording that makes a true statement the wrong answer.",
+    concepts: []
+  },
+  {
+    id: "study-exam-planning",
+    module: "study-skills",
+    area: "revision-exams",
+    order: 3,
+    title: "The evening before",
+    description: "Find the gaps instead of trying to reread everything.",
     concepts: []
   }
 ];
@@ -415,5 +489,187 @@ const BT_ENTRIES = [
     kind: "At the microscope",
     title: "Movement in the field is not automatically motility",
     body: "A cell drifting across the view might be swimming, or the fluid itself might be moving. Compare what you see across the field and use the course's criteria before calling it motility. If you cannot tell, record the observation as uncertain rather than forcing a yes or no."
+  },
+  {
+    id: "study-essay-criterion-paragraph",
+    type: "note",
+    module: "study-skills",
+    area: "essays",
+    task: "study-essay-paragraphs",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "Before you draft",
+    title: "Give each paragraph a job",
+    body: "Pick one marking point and turn it into a question for your paragraph to answer. Make your point, bring in evidence, then say why it matters. That last step is what turns a study summary into an argument."
+  },
+  {
+    id: "study-summary-findings-limits",
+    type: "note",
+    module: "study-skills",
+    area: "essays",
+    task: "study-scientific-summaries",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When the paper is packed with detail",
+    title: "Keep your eye on the research question",
+    body: "Follow what the researchers asked, what they found and why it matters. Add a limitation, too. A result in animals can point to a possibility, but it does not prove the same effect in people."
+  },
+  {
+    id: "study-paper-three-passes",
+    type: "note",
+    module: "study-skills",
+    area: "essays",
+    task: "study-scientific-summaries",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When the paper feels like a maze",
+    title: "Make three quick passes",
+    body: "First, find the question. Next, trace the methods, results and conclusion. Last, look for assumptions and limitations. You will know what the details are doing before you get lost in them."
+  },
+  {
+    id: "study-references-as-you-write",
+    type: "note",
+    module: "study-skills",
+    area: "assignments",
+    task: "study-referencing",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When you find a source worth keeping",
+    title: "Save the reference while it is open",
+    body: "Add its details to your list now, and save the DOI or a stable link. Before handing in, match every citation to a reference and check that someone else could find each source."
+  },
+  {
+    id: "study-reference-style-check",
+    type: "note",
+    module: "study-skills",
+    area: "assignments",
+    task: "study-referencing",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "Before you hand it in",
+    title: "Give generated references a once-over",
+    body: "Citation tools can miss details or pick the wrong format. Check their work against the style your module asks for, including the order of the list and any details needed for websites."
+  },
+  {
+    id: "study-ai-practice-not-prose",
+    type: "note",
+    module: "study-skills",
+    area: "assignments",
+    task: "study-ai-for-learning",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When you want a revision partner",
+    title: "Ask AI to quiz you, not do the task",
+    body: "Get it to explain an idea or ask you practice questions, then check the answers against your course materials. Write assessed work yourself and follow your module's rules. A fluent answer is no proof you could explain it."
+  },
+  {
+    id: "study-calculation-units-first",
+    type: "note",
+    module: "study-skills",
+    area: "calculations",
+    task: "study-calculation-checks",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "Before the calculator comes out",
+    title: "Write the units beside the numbers",
+    body: "Set out the formula and units before you calculate, then check whether the answer is a sensible size. For dilution or colony-count questions, keep the dilution and plated volume beside the count so you can see what you are scaling back to."
+  },
+  {
+    id: "study-recall-three-levels",
+    type: "note",
+    module: "study-skills",
+    area: "revision-exams",
+    task: "study-active-recall",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When your notes start looking too familiar",
+    title: "Close the book and try three steps",
+    body: "Recall a definition, explain why it is true, then use it in a new example. If you get stuck after the first step, there is your next thing to practise. No need to reread the whole topic."
+  },
+  {
+    id: "study-lecture-reset",
+    type: "note",
+    module: "study-skills",
+    area: "revision-exams",
+    task: "study-active-recall",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "After a lecture",
+    title: "Leave a trail back to the big picture",
+    body: "Without looking, jot down a few key facts, how they link to earlier ideas, and one question you still have. A quick check now can save you meeting the topic as a stranger at exam time."
+  },
+  {
+    id: "study-mcq-wording",
+    type: "note",
+    module: "study-skills",
+    area: "revision-exams",
+    task: "study-multiple-choice",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When every option looks familiar",
+    title: "Spot the little word with a big job",
+    body: "Slow down at “NOT”, “EXCEPT”, “best” and “only”. Predict an answer before you scan the options. A statement can be true biology and still answer the wrong question."
+  },
+  {
+    id: "study-mcq-distractors",
+    type: "note",
+    module: "study-skills",
+    area: "revision-exams",
+    task: "study-multiple-choice",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When you check a practice answer",
+    title: "Work out why the other choices failed",
+    body: "Do more than celebrate the right answer. Find the snag in each tempting alternative: a direction flipped, an overconfident “always”, or two similar terms muddled up. You will spot the same trick next time."
+  },
+  {
+    id: "study-high-transfer-revision",
+    type: "note",
+    module: "study-skills",
+    area: "revision-exams",
+    task: "study-exam-planning",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When the revision list is longer than the evening",
+    title: "Start with ideas that unlock other topics",
+    body: "Look for useful links such as structure and function, transport, or cause and effect. Understanding a few ideas that turn up in several places can beat racing through a pile of facts."
+  },
+  {
+    id: "study-evening-active-review",
+    type: "note",
+    module: "study-skills",
+    area: "revision-exams",
+    task: "study-exam-planning",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "The evening before",
+    title: "Find the gaps before the exam finds them",
+    body: "Try a few questions from memory, sketch a process or work a calculation without notes. Check your attempts, then use your time on the parts that tripped you up. Rereading everything can wait."
   }
 ];
