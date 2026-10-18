@@ -1,16 +1,419 @@
 "use strict";
 
-const BT_CONFIG = { suggest_url: "" };
-
 const BT_MODULES = [
   { id: "bs1030", title: "BS1030" },
   { id: "bs1040", title: "BS1040" }
 ];
 
-const BT_PRACTICALS = [
-  // Add practicals here once you have real student notes to share.
+const BT_AREAS = [
+  { id: "practicals", title: "Practicals", description: "Lab sessions, methods and bench skills", mark: "✳" },
+  { id: "essays", title: "Essays", description: "Planning, structure and making an argument", mark: "✎" },
+  { id: "assignments", title: "Assignments", description: "Coursework, reports and projects", mark: "▤" },
+  { id: "graphs-data", title: "Graphs & data", description: "Presenting results and spotting patterns", mark: "⌁" },
+  { id: "calculations", title: "Calculations", description: "Working through the numbers", mark: "∑" },
+  { id: "software", title: "Software & coding", description: "Programs, workflows and troubleshooting", mark: "⌘" }
 ];
 
+const BT_TASKS = [
+  {
+    id: "bs1030-practical-1-spectrophotometry",
+    module: "bs1030",
+    area: "practicals",
+    order: 1,
+    title: "Practical 1: Spectrophotometry",
+    description: "Analysing solutions with absorbance and graphs.",
+    concepts: []
+  },
+  {
+    id: "bs1030-practical-2-beta-galactosidase",
+    module: "bs1030",
+    area: "practicals",
+    order: 2,
+    title: "Practical 2: β-galactosidase",
+    description: "Following enzyme activity and interpreting kinetic data.",
+    concepts: []
+  },
+  {
+    id: "bs1030-practical-3-dna-endonucleases",
+    module: "bs1030",
+    area: "practicals",
+    order: 3,
+    title: "Practical 3: DNA endonucleases",
+    description: "Investigating DNA digestion and gel electrophoresis.",
+    concepts: []
+  },
+  {
+    id: "bs1030-practical-4-histone-purification",
+    module: "bs1030",
+    area: "practicals",
+    order: 4,
+    title: "Practical 4: Histone purification",
+    description: "Purifying histone proteins and interpreting PAGE results.",
+    concepts: []
+  },
+  {
+    id: "bs1030-practical-5-ion-exchange",
+    module: "bs1030",
+    area: "practicals",
+    order: 5,
+    title: "Practical 5: Ion-exchange chromatography",
+    description: "Separating a protein mixture and assessing the fractions.",
+    concepts: []
+  },
+  {
+    id: "bs1040-practical-1-microscopy-aseptic-technique",
+    module: "bs1040",
+    area: "practicals",
+    order: 1,
+    title: "Practical 1: Microscopy & aseptic technique",
+    description: "Observing cells and microbes, and practising microscopy.",
+    concepts: []
+  },
+  {
+    id: "bs1040-practical-2-bacterial-diversity",
+    module: "bs1040",
+    area: "practicals",
+    order: 2,
+    title: "Practical 2: Bacterial diversity",
+    description: "Comparing microbial growth and colony observations.",
+    concepts: []
+  },
+  {
+    id: "bs1040-practical-3-microbial-identification",
+    module: "bs1040",
+    area: "practicals",
+    order: 3,
+    title: "Practical 3: Microbial identification",
+    description: "Using observations and tests to identify microbes and quantify viable bacteria.",
+    concepts: []
+  },
+  {
+    id: "bs1040-practical-4-growth-biotechnology",
+    module: "bs1040",
+    area: "practicals",
+    order: 4,
+    title: "Practical 4: Bacterial growth & biotechnology",
+    description: "Planning a heat-tolerance experiment and exploring molecular cloning.",
+    concepts: []
+  },
+  {
+    id: "bs1040-practical-5-growth-motility",
+    module: "bs1040",
+    area: "practicals",
+    order: 5,
+    title: "Practical 5: Growth rates & motility",
+    description: "Tracking bacterial growth and observing motility.",
+    concepts: []
+  }
+];
 const BT_CONCEPTS = [];
-
-const BT_ENTRIES = [];
+const BT_ENTRIES = [
+  {
+    id: "bs1030-p1-outlier",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-1-spectrophotometry",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When one point looks odd",
+    title: "Keep the reading that does not fit",
+    body: "You plot the absorbance values and one point sits far from the rest. It may be tempting to leave it out so the graph looks tidy, but that point could be real. Check the original reading and any recorded issues; keep it unless you have a documented reason to exclude it, and explain that reason."
+  },
+  {
+    id: "bs1030-p1-cuvette-consistency",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-1-spectrophotometry",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "At the spectrophotometer",
+    title: "A smudge can look like a sample effect",
+    body: "Two samples can be identical, yet a fingerprint or a different cuvette orientation can change the light reaching the detector. Handle cuvettes by the ridged sides, keep the clear faces clean, and use the same orientation each time."
+  },
+  {
+    id: "bs1030-p2-timing-delay",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-2-beta-galactosidase",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When the reaction starts",
+    title: "The first reading has a hidden clock",
+    body: "The enzyme reaction begins before the first absorbance value appears on screen. If one assay waits longer than another, its apparent early rate may differ for timing alone. Keep starts and readings as consistent as the method allows, and note any delay rather than pretending the timings matched."
+  },
+  {
+    id: "bs1030-p2-rate-window",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-2-beta-galactosidase",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When the curve bends",
+    title: "A rate belongs to a part of the curve",
+    body: "An enzyme trace may be close to straight at first, then bend as the reaction continues. A slope across the whole trace can hide that change. Use the interval your course method specifies for the initial rate, and make sure the time units in your slope match the rate units you report."
+  },
+  {
+    id: "bs1030-p3-gel-lane-identity",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-3-dna-endonucleases",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When bands are hard to read",
+    title: "Write down the lane map before interpreting bands",
+    body: "Once several lanes look similar, it is easy to remember the sample in the wrong position. Make a lane map from the loading order while it is fresh, then use it when comparing bands with the size marker. If a lane is uncertain, keep that uncertainty visible instead of choosing the expected answer."
+  },
+  {
+    id: "bs1030-p3-marker-range",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-3-dna-endonucleases",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When estimating fragment size",
+    title: "Do not stretch the marker beyond its evidence",
+    body: "A band may run above or below the marker bands you can see. An estimate is strongest within the marker's covered range; far outside it, a small visual guess can become a large size error. Record it as approximate and follow the course guidance for interpreting that band."
+  },
+  {
+    id: "bs1030-p4-sample-identity",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-4-histone-purification",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "Between centrifuge steps",
+    title: "Record whether you kept the pellet or the liquid",
+    body: "After a spin, both the pellet and supernatant can look like plausible samples, but the next step may use only one of them. Before moving on, note which part the current protocol says to keep. If you are unsure, pause and check rather than continuing with the wrong fraction."
+  },
+  {
+    id: "bs1030-p4-tube-tracking",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-4-histone-purification",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When several samples look alike",
+    title: "Do not rely on tube position as an identity",
+    body: "A busy bench can shift racks, and clear tubes can look interchangeable. Keep the sample label and your record together at every transfer. If an identity is genuinely lost, mark the sample as unknown and ask what to do; guessing can make every later result misleading."
+  },
+  {
+    id: "bs1030-p5-fraction-order",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-5-ion-exchange",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "As the fractions come off",
+    title: "Keep fraction order attached to every reading",
+    body: "A sequence of tubes can become hard to reconstruct after you start diluting and measuring them. Label or record each fraction in collection order before moving on, then copy that identity alongside its absorbance. A swapped label can create a convincing-looking but false elution pattern."
+  },
+  {
+    id: "bs1030-p5-missing-fraction",
+    type: "note",
+    module: "bs1030",
+    area: "practicals",
+    task: "bs1030-practical-5-ion-exchange",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When a reading is missing",
+    title: "Leave a gap visible instead of inventing a value",
+    body: "If one fraction has no reading, leave that point missing and note why if you know. Do not shift the later values along a row or fill the gap by guessing from the graph. The shape of the result is evidence; it should not be used to manufacture a measurement."
+  },
+  {
+    id: "bs1040-p1-sketch-vs-measurement",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-1-microscopy-aseptic-technique",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When changing magnification",
+    title: "A scale reading changes with the objective",
+    body: "A cell may span the same number of eyepiece divisions after you change objectives, but each division now represents a different real distance. Use the calibration for the objective you actually used, and note whether a size was measured or only estimated."
+  },
+  {
+    id: "bs1040-p1-field-of-view",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-1-microscopy-aseptic-technique",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When comparing cells",
+    title: "Compare like with like",
+    body: "A cell can look larger simply because you changed magnification or are viewing a different field. Before comparing sizes or shapes, check that the observations were made under comparable conditions and use calibrated measurements where the task asks for them."
+  },
+  {
+    id: "bs1040-p2-plate-identity",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-2-bacterial-diversity",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When several plates look alike",
+    title: "Match every observation to its plate",
+    body: "After incubation, plates from different samples or conditions can look surprisingly similar. Check the label before recording a colony count or appearance, and keep the condition beside the observation. If you cannot identify a plate confidently, say so instead of inferring its label from the result."
+  },
+  {
+    id: "bs1040-p2-no-growth",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-2-bacterial-diversity",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When there is no visible growth",
+    title: "No colonies does not explain why",
+    body: "A plate with no visible growth is an observation, not a complete explanation. It could reflect the condition tested, but a handling or inoculation issue may also matter. Record exactly what you saw, compare with the relevant controls, and keep the conclusion appropriately cautious."
+  },
+  {
+    id: "bs1040-p3-observation-before-interpretation",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-3-microbial-identification",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When test results disagree",
+    title: "Write the observation before the interpretation",
+    body: "One test result may not fit the organism you expected. First record what happened in the test, then separately note what that result could mean. Keeping observation and interpretation apart makes it easier to revisit the identification without rewriting what you actually saw."
+  },
+  {
+    id: "bs1040-p3-dilution-factor",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-3-microbial-identification",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When the count seems impossible",
+    title: "Check which way round the dilution factor goes",
+    body: "A small plated sample from a highly diluted tube represents a much larger original sample. Keep the plate count, dilution, and plated volume together, then check whether your calculation scales back to the original concentration. If the answer looks wildly off, inspect the exponent and volume conversion before changing any observed count."
+  },
+  {
+    id: "bs1040-p3-countable-plate",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-3-microbial-identification",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 3,
+    kind: "When colonies are crowded",
+    title: "Do not force a precise count from a crowded plate",
+    body: "If colonies merge or are too numerous to distinguish, an exact count can look more certain than it is. Follow the course's countable-range guidance, record which dilution you used, and describe an uncountable plate honestly rather than inventing a precise number."
+  },
+  {
+    id: "bs1040-p4-control-limitation",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-4-growth-biotechnology",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When a control surprises you",
+    title: "A control that fails changes the conclusion",
+    body: "A result may look clear until you notice the control did not behave as expected. Record that outcome and treat it as a limit on what the experiment can show. Do not quietly discard the control or describe the result as conclusive; ask how the course expects you to proceed."
+  },
+  {
+    id: "bs1040-p4-condition-map",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-4-growth-biotechnology",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When comparing plates",
+    title: "Keep the treatment key with the result",
+    body: "When several plates represent different treatments, it is easy to remember the pattern but forget which label meant what. Keep a key linking each plate label to its condition and control, and use that same key when you record the outcome."
+  },
+  {
+    id: "bs1040-p5-unexpected-observation",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-5-growth-motility",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "When the sampling schedule slips",
+    title: "Write the actual time, not the planned time",
+    body: "If a reading meant for one time point is taken late, the value belongs to when it was actually measured. Record the real time and the delay; plotting it at the planned time can make growth appear faster or slower than it was."
+  },
+  {
+    id: "bs1040-p5-growth-readings",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-5-growth-motility",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 2,
+    kind: "When the culture looks different",
+    title: "Keep readings and visual impressions distinct",
+    body: "A broth can look cloudier without telling you exactly how much the cell concentration changed. Keep the measured absorbance values as your data and describe appearance separately; do not replace one with the other when a reading seems unexpected."
+  },
+  {
+    id: "bs1040-p5-motility-vs-drift",
+    type: "note",
+    module: "bs1040",
+    area: "practicals",
+    task: "bs1040-practical-5-growth-motility",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 3,
+    kind: "At the microscope",
+    title: "Movement in the field is not automatically motility",
+    body: "A cell drifting across the view might be swimming, or the fluid itself might be moving. Compare what you see across the field and use the course's criteria before calling it motility. If you cannot tell, record the observation as uncertain rather than forcing a yes or no."
+  }
+];
