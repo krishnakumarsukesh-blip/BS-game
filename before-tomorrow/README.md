@@ -1,6 +1,6 @@
 # Before Tomorrow
 
-A curated student notebook for the small, easy-to-miss details that can make the next practical, assignment, graph, calculation, or coding task go more smoothly. Tips are grouped by **module → area → task** so each topic gets its own page and can stay short when there is little to share.
+A curated student notebook of field notes for the next cohort. Practical tips are grouped by **module → area → task**. Advice that applies across modules lives in the **Shared field guide**, so general study tips do not crowd the practical pages.
 
 This is a read-only, static notebook. Visitors can browse and share the published pages, but there is no public submission form or note editor. Students can keep personal annotations in their own notes; published content is added by the maintainer.
 
@@ -20,7 +20,7 @@ Edit `entries.js`. Add tasks only when there is a useful topic to browse; not ev
 }
 ```
 
-Available areas are listed in `BT_AREAS`: `practicals`, `essays`, `assignments`, `graphs-data`, `calculations`, and `software`. Each task ID must be unique, lower-case kebab-case. Use module IDs `bs1030` or `bs1040`. `order` controls the task list order within that area. Add concepts to `BT_CONCEPTS` before referencing them.
+Available areas are listed in `BT_AREAS`: `practicals`, `essays`, `assignments`, `graphs-data`, `calculations`, `software`, and `revision-exams`. Each task ID must be unique, lower-case kebab-case. Use module IDs `bs1030` or `bs1040` for module-specific advice, and `study-skills` for the shared field guide. `order` controls the task list order within that area. Add concepts to `BT_CONCEPTS` before referencing them.
 
 ## Add a note
 
@@ -55,7 +55,7 @@ Other note types:
 
 Set `confidence` to `personal`, `checked`, or `outdated`. Use `personal` for a practical notebook tip; use `checked` only for content verified against current course material. Set the year the note was added. Resource links must use HTTPS. Keep tips focused on one useful idea, explain why it matters, avoid names or personal criticism, and never contradict current safety instructions.
 
-The task titles reflect the current BS1030 and BS1040 practical booklets. Tips focus on practical judgement and easy-to-miss data-quality details rather than repeating the protocol. To publish a new tip, the maintainer adds it to `BT_ENTRIES` in `entries.js` and deploys the site.
+The story frames the tips as clues left for the next cohort to clear the lab's special levels. It is playful folklore, not a claim that real students were harmed. Practical tips focus on judgement and easy-to-miss data-quality details rather than repeating the protocol. Cross-module writing, referencing, calculation, and revision advice belongs in the Shared field guide. To publish a new tip, the maintainer adds it to `BT_ENTRIES` in `entries.js` and deploys the site.
 
 ## Preview and validate
 

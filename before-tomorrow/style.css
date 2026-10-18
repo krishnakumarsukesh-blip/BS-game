@@ -10,6 +10,7 @@
   --paper: #fffdf6;
   --line: #ded9c9;
   --accent: #9b573c;
+  --handwritten: "Segoe Print", "Bradley Hand", "Comic Sans MS", cursive;
 }
 
 * { box-sizing: border-box; }
@@ -70,7 +71,7 @@ p { max-width: 72ch; }
 }
 .cover-kicker { color: #e8d8b4; }
 .cover-mark { margin: 15px 0 10px; color: #e1c48d; font-family: Georgia, serif; font-size: 64px; line-height: 1; }
-.cover-caption { max-width: 160px; margin-bottom: 18px; font-family: Georgia, serif; font-size: 20px; line-height: 1.3; }
+.cover-caption { max-width: 180px; margin-bottom: 18px; font-family: var(--handwritten); font-size: 18px; font-weight: 700; line-height: 1.4; }
 .notebook-open, button, .secondary-link {
   display: inline-flex;
   min-height: 44px;
@@ -102,7 +103,7 @@ button:hover, .secondary-link:hover { background: #244437; }
   color: #34453b;
 }
 .notebook-dialog::backdrop { background: #17251fcc; backdrop-filter: blur(3px); }
-.notebook-dialog h2 { margin: 0 0 18px; font-size: clamp(28px, 6vw, 38px); }
+.notebook-dialog h2 { margin: 0 0 18px; font-family: var(--handwritten); font-size: clamp(26px, 5vw, 34px); line-height: 1.25; }
 .notebook-dialog p:not(.eyebrow) { margin-bottom: 16px; }
 .dialog-actions { display: flex; justify-content: flex-end; margin-top: 25px; }
 .dialog-actions button { background: var(--ink); }
@@ -173,8 +174,9 @@ button:hover, .secondary-link:hover { background: #244437; }
 .task-notes { margin: 28px 0; }
 .task-notes h2 { margin-bottom: 12px; }
 .note-card { border-left-color: #6f9077; }
+.note-card h3 { font-family: var(--handwritten); font-size: clamp(19px, 2.5vw, 22px); line-height: 1.4; }
 .note-body { margin-bottom: 0; white-space: pre-line; }
-.note-kind { display: inline-block; margin-bottom: 8px; }
+.note-kind { display: inline-block; margin-bottom: 8px; font-family: var(--handwritten); font-size: 12px; font-weight: 700; letter-spacing: .01em; text-transform: none; }
 .area-card[hidden], .task-card[hidden], [hidden] { display: none !important; }
 .concept-list { margin: 0; padding: 0; list-style: none; }
 .badge {
