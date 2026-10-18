@@ -76,7 +76,16 @@
     .lobby-actions{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
     #start{min-width:min(100%,230px);font-size:1.08rem}
     #quick{margin:0}
-    .daily{margin:20px 0 14px;box-shadow:0 5px 18px #102a4310}
+    .daily{margin:16px 0 14px;padding:clamp(18px,4vw,24px);border:2px solid #f5c451;box-shadow:0 7px 22px #102a4315}
+    .daily>p{margin:8px 0 14px}
+    .daily>.eyebrow{font-size:14px}
+    .daily #dailyStart{min-height:46px;padding:12px 20px;font-size:1.02rem}
+    .campaign-details{margin:10px 0;border:1px solid #d8e0e8;border-radius:13px;background:#f5f8fb}
+    .campaign-details>summary{cursor:pointer;list-style:none;padding:12px 15px;color:#1769aa;font-weight:850}
+    .campaign-details>summary::-webkit-details-marker{display:none}
+    .campaign-details>summary::after{content:"＋";float:right}
+    .campaign-details[open]>summary::after{content:"−"}
+    .campaign-details>summary:focus-visible{outline:3px solid #f5c451;outline-offset:2px;border-radius:12px}
     .campaign-card{display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:center;margin:18px 0;padding:17px 19px;border:1px solid #c9dce8;border-left:5px solid #1769aa;border-radius:14px;background:linear-gradient(110deg,#f4f9fc,#fffdf7)}
     .campaign-card h2{margin:2px 0;font-size:clamp(18px,3vw,22px);color:#102a43}
     .campaign-card p{margin:0;color:#526477}
@@ -88,7 +97,7 @@
     .campaign-clue{margin-top:13px;padding:12px 14px;border-radius:10px;background:#f5f8fb;color:#334e62}
     .campaign-clue b{display:block;margin-bottom:3px;color:#1769aa}
     @media(prefers-reduced-motion:reduce){.campaign-meter i{transition:none}}
-    @media(max-width:480px){.campaign-card{grid-template-columns:1fr}.campaign-card button{grid-column:1;grid-row:auto;justify-self:start}}
+    @media(max-width:480px){.campaign-card{grid-template-columns:1fr;margin:8px;padding:14px}.campaign-card button{grid-column:1;grid-row:auto;justify-self:start}}
     .home-details{border-color:#d8e0e8}
     .home-details summary{color:#1769aa}
     .home-details summary::after{color:#1769aa}
@@ -181,6 +190,9 @@
 
   let campaignProgress = readCampaign();
   let campaignStorageError = false;
+  const campaignDetails = document.createElement("details");
+  campaignDetails.className = "campaign-details";
+  campaignDetails.innerHTML = `<summary id="campaignSummary"></summary>`;
   const campaignCard = document.createElement("section");
   campaignCard.className = "campaign-card";
   campaignCard.setAttribute("aria-labelledby", "campaignTitle");
@@ -193,7 +205,11 @@
       <i id="campaignMeter"></i>
     </div>
     <button id="campaignStart" class="primary" type="button"></button>`;
-  document.querySelector(".lobby-actions").after(campaignCard);
+  campaignDetails.append(campaignCard);
+  const dailyChallenge = document.querySelector(".daily");
+  dailyChallenge.after(campaignDetails);
+  campaignDetails.after(controls);
+  const campaignSummary = campaignDetails.querySelector("#campaignSummary");
   const campaignTitle = campaignCard.querySelector("#campaignTitle");
   const campaignCopy = campaignCard.querySelector("#campaignCopy");
   const campaignProgressText = campaignCard.querySelector("#campaignProgress");
@@ -213,6 +229,10 @@
       : complete
         ? `${campaignProgress.totalClues} clues found · the demonstrator has been gently reassigned from fridge duty`
         : `${campaignProgress.clues} of 3 clues found · mistakes are leads, not penalties`;
+    const storySummary = complete
+      ? "🕵️ Story mode · Case closed"
+      : `🕵️ Story mode · Chapter ${campaignProgress.chapter + 1} · ${campaignProgress.clues} of 3 clues`;
+    campaignSummary.textContent = campaignStorageError ? `${storySummary} · progress not saved` : storySummary;
     campaignMeterFill.style.width = complete ? "100%" : `${campaignProgress.clues / 3 * 100}%`;
     campaignMeter.setAttribute("aria-valuenow", String(complete ? 3 : campaignProgress.clues));
     campaignStart.textContent = complete ? "Read the case ending" : "Continue the mystery";
@@ -742,10 +762,10 @@
     .account-toolbar button:disabled{opacity:.65;cursor:wait}
     .account-toolbar button:hover{border-color:#1769aa;background:#f4f9fc}
     .account-toolbar button:focus-visible{outline:3px solid #f5c451;outline-offset:2px}
-    .account-toolbar .account-status{position:absolute;right:0;top:calc(100% + 4px);max-width:min(90vw,420px);padding:6px 10px;border-radius:8px;background:#102a43;color:#fff;font-size:13px;text-align:right;box-shadow:0 3px 12px #102a4325}
+    .account-toolbar .account-status{position:static;max-width:min(44vw,420px);padding:5px 9px;border-radius:8px;background:#102a43;color:#fff;font-size:12px;text-align:right;box-shadow:0 3px 12px #102a4325}
     .account-toolbar .account-status:empty{display:none}
     .account-toolbar .account-status[data-error="true"]{background:#8b2424}
-    @media(max-width:480px){.account-toolbar{top:4px;margin:-8px 0 6px}.account-toolbar button{min-height:36px;padding:6px 9px;font-size:12px}.account-toolbar .account-actions{gap:5px}}
+    @media(max-width:480px){.account-toolbar{top:4px;margin:-8px 0 6px}.account-toolbar button{min-height:36px;padding:6px 9px;font-size:12px}.account-toolbar .account-actions{gap:5px}.account-toolbar .account-status{max-width:32vw;padding:4px 6px;font-size:10px}}
   `;
   document.head.append(accountStyles);
 
@@ -779,12 +799,15 @@
   let syncRunning = false;
   let syncPending = false;
   let lastCloudWriteAt = 0;
+  let accountStatusTimer = 0;
   const minCloudWriteInterval = 5000;
   const progressKeys = new Set(TRANSFER_KEYS);
 
   function showAccountError(error) {
+    window.clearTimeout(accountStatusTimer);
     accountStatus.dataset.error = "true";
-    accountStatus.textContent = `Account or progress sync problem: ${error.message || "check your connection and try again"}. Your local progress is still here.`;
+    const reason = (error.message || "check your connection and try again").replace(/[.!?]+$/, "");
+    accountStatus.textContent = `Account or progress sync problem: ${reason}. Your local progress is still here.`;
     console.error("Clerk account or progress sync failed.", error);
   }
 
@@ -801,8 +824,14 @@
   }
 
   function showAccountStatus(message) {
+    window.clearTimeout(accountStatusTimer);
     accountStatus.dataset.error = "false";
     accountStatus.textContent = message;
+    if (message) {
+      accountStatusTimer = window.setTimeout(() => {
+        accountStatus.textContent = "";
+      }, 4500);
+    }
   }
 
   function renderAccount(user) {
