@@ -1,67 +1,62 @@
 # Before Tomorrow
 
-A friendly notebook for University of Leicester biology students to pass practical tips from one lab group to the next. Notes are student contributions, not official instructions. The current practical brief and demonstrator always come first, especially for safety.
+A curated student notebook for the small, easy-to-miss details that can make the next practical, assignment, graph, calculation, or coding task go more smoothly. Tips are grouped by **module → area → task** so each topic gets its own page and can stay short when there is little to share.
 
-The live notebook starts with blank pages rather than invented examples. The demonstrator-notebook story in the site is a bit of atmosphere, not a claim that entries are real demonstrator quotations.
+This is a read-only, static notebook. Visitors can browse and share the published pages, but there is no public submission form or note editor. Students can keep personal annotations in their own notes; published content is added by the maintainer.
 
-## Add notes
+## Add a task
 
-Edit `entries.js`:
-
-1. Add a concept to `BT_CONCEPTS` if students would benefit from revisiting it.
-2. Add the practical to `BT_PRACTICALS`, using a unique lower-case kebab-case ID and its module ID (`bs1030` or `bs1040`).
-3. Add student-contributed records to `BT_ENTRIES`, linked to that practical.
-4. Only describe a tip as course-checked when it has been checked against current course material. Set its year to the year it was shared.
-
-Practical:
+Edit `entries.js`. Add tasks only when there is a useful topic to browse; not every practical or piece of coursework needs a page.
 
 ```js
-{ id: "bs1030-practical-name", module: "bs1030", order: 2, title: "Practical name", concepts: ["concept-id"] }
+{
+  id: "bs1030-osmosis-practical",
+  module: "bs1030",
+  area: "practicals",
+  order: 1,
+  title: "Osmosis practical",
+  description: "Optional short context shown on the task card.",
+  concepts: []
+}
 ```
 
-Concept:
+Available areas are listed in `BT_AREAS`: `practicals`, `essays`, `assignments`, `graphs-data`, `calculations`, and `software`. Each task ID must be unique, lower-case kebab-case. Use module IDs `bs1030` or `bs1040`. `order` controls the task list order within that area. Add concepts to `BT_CONCEPTS` before referencing them.
+
+## Add a note
+
+Every note belongs to one task. Use a `note` for a helpful tip, common trip-up, workflow, or checklist:
 
 ```js
-{ id: "concept-id", label: "Concept label", note: "Short revision note.", revise_url: "" }
+{
+  id: "bs1030-osmosis-practical-label-tip",
+  type: "note",
+  module: "bs1030",
+  area: "practicals",
+  task: "bs1030-osmosis-practical",
+  concepts: [],
+  confidence: "personal",
+  year: 2026,
+  priority: 1,
+  kind: "When the samples look alike",
+  title: "Keep the sample identity with the result",
+  body: "Set the scene, explain the easy-to-miss risk, and give a useful next step in a few clear sentences."
+}
 ```
 
-Common trip-up:
+Other note types:
 
 ```js
-{ id: "bs1030-practical-name-tip-1", type: "mistake", module: "bs1030", practical: "bs1030-practical-name", concepts: ["concept-id"], confidence: "single", year: 2026, priority: 1, error: "What can catch people out", consequence: "What may happen", cause: "Why it can happen", prevention: "A useful thing to try" }
+{ id: "bs1030-osmosis-question-1", type: "why", module: "bs1030", area: "practicals", task: "bs1030-osmosis-practical", concepts: [], confidence: "checked", year: 2026, priority: 1, question: "Why is this step needed?", reason: "A short explanation checked against current course material." }
 ```
-
-Question:
 
 ```js
-{ id: "bs1030-practical-name-why-1", type: "why", module: "bs1030", practical: "bs1030-practical-name", concepts: ["concept-id"], confidence: "checked", year: 2026, priority: 1, question: "Why is this step needed?", reason: "A short explanation checked against current course material." }
+{ id: "bs1030-osmosis-tool-1", type: "tool", module: "bs1030", area: "practicals", task: "bs1030-osmosis-practical", concepts: [], confidence: "personal", year: 2026, priority: 1, name: "Tool or resource", use_when: "When it is useful", why: "Why it helps", link: "", check_ai_policy: false }
 ```
 
-Tool:
+Set `confidence` to `personal`, `checked`, or `outdated`. Use `personal` for a practical notebook tip; use `checked` only for content verified against current course material. Set the year the note was added. Resource links must use HTTPS. Keep tips focused on one useful idea, explain why it matters, avoid names or personal criticism, and never contradict current safety instructions.
 
-```js
-{ id: "bs1030-tool-name", type: "tool", module: "bs1030", practical: null, concepts: [], confidence: "personal", year: 2026, priority: 1, name: "Tool name", use_when: "When it is useful", why: "Why it helps", needed_by: "Before the relevant task", link: "", check_ai_policy: false }
-```
+The task titles reflect the current BS1030 and BS1040 practical booklets. Tips focus on practical judgement and easy-to-miss data-quality details rather than repeating the protocol. To publish a new tip, the maintainer adds it to `BT_ENTRIES` in `entries.js` and deploys the site.
 
-Use `practical: null` only for a module-wide tool. Resource links must use HTTPS. Set `check_ai_policy` to `true` for AI-based tools.
+## Preview and validate
 
-## Tip labels
-
-- `checked`: matches current course material or demonstrator advice.
-- `several`: independently shared by more than one student.
-- `single`: one student's experience.
-- `personal`: a preference, not a rule.
-- `outdated`: may need checking against this year's course.
-
-## Keep notes useful
-
-- Share practical details, not names or criticism of individuals.
-- Keep one clear idea per note and write as if helping a friend prepare.
-- Check factual and safety-related advice against current practical materials.
-- Do not invent student experiences or present a story as a real quotation.
-
-## Preview and publish
-
-Open `index.html` in a browser. For full sharing support, use HTTPS or localhost. Add `?debug=1` to the page URL to check the content for data problems. Check the page on mobile and with a keyboard before publishing.
-
-The companion is static, uses no accounts or analytics, and is linked from the game home page. Review course-specific notes and links at least once each academic year.
+Open `index.html` in a browser. Add `?debug=1` to the URL to check data relationships and counts. Check navigation, task search, mobile layout, and keyboard access before publishing. The page is static and uses no accounts or analytics.

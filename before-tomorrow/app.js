@@ -1,15 +1,13 @@
 "use strict";
 
 (function () {
-  const DISCLAIMER = "A few student-to-student notes for your next lab. For methods and safety, always follow your current practical brief and demonstrator.";
+  const DISCLAIMER = "These tips are reminders, not official instructions. For assessment requirements, methods and safety, follow your current module brief and teaching team.";
   const CONFIDENCE = {
     checked: ["Course-checked", "Matches current course material"],
-    several: ["Shared by several", "Reported by more than one student"],
-    single: ["One student's tip", "One student's experience"],
-    personal: ["Personal tip", "A preference, not a rule"],
+    personal: ["Notebook tip", "A practical reminder to keep in mind"],
     outdated: ["Worth rechecking", "The course or software may have changed"]
   };
-  const TYPES = ["mistake", "why", "tool"];
+  const TYPES = ["note", "why", "tool"];
   const app = document.getElementById("app");
   const siteFooter = document.getElementById("site-footer");
   const liveStatus = document.getElementById("live-status");
@@ -64,7 +62,8 @@
   function validateData() {
     const problems = [];
     const moduleIds = new Set();
-    const practicalIds = new Set();
+    const areaIds = new Set();
+    const taskIds = new Set();
     const conceptIds = new Set();
     const entryIds = new Set();
 
@@ -118,22 +117,51 @@
       });
     }
 
-    const practicalCandidates = [];
-    if (!Array.isArray(BT_PRACTICALS)) {
-      addProblem(problems, "data", "practicals", "must be an array");
+    const areas = [];
+    if (!Array.isArray(BT_AREAS)) {
+      addProblem(problems, "data", "areas", "must be an array");
     } else {
-      BT_PRACTICALS.forEach(function (item, index) {
-        const scope = item && item.id || "practical " + (index + 1);
+      BT_AREAS.forEach(function (item, index) {
+        const scope = item && item.id || "area " + (index + 1);
         let valid = true;
         if (!item || !isKebab(item.id)) {
           addProblem(problems, scope, "id", "must be unique kebab-case");
           valid = false;
-        } else if (practicalIds.has(item.id)) {
-          addProblem(problems, scope, "id", "duplicate practical id");
+        } else if (areaIds.has(item.id)) {
+          addProblem(problems, scope, "id", "duplicate area id");
+          valid = false;
+        }
+        if (!item || !isString(item.title) || !isString(item.description)) {
+          addProblem(problems, scope, "content", "title and description are required");
+          valid = false;
+        }
+        if (valid) {
+          areaIds.add(item.id);
+          areas.push(item);
+        }
+      });
+    }
+
+    const taskCandidates = [];
+    if (!Array.isArray(BT_TASKS)) {
+      addProblem(problems, "data", "tasks", "must be an array");
+    } else {
+      BT_TASKS.forEach(function (item, index) {
+        const scope = item && item.id || "task " + (index + 1);
+        let valid = true;
+        if (!item || !isKebab(item.id)) {
+          addProblem(problems, scope, "id", "must be unique kebab-case");
+          valid = false;
+        } else if (taskIds.has(item.id)) {
+          addProblem(problems, scope, "id", "duplicate task id");
           valid = false;
         }
         if (!item || !moduleIds.has(item.module)) {
           addProblem(problems, scope, "module", "unknown module");
+          valid = false;
+        }
+        if (!item || !areaIds.has(item.area)) {
+          addProblem(problems, scope, "area", "unknown area");
           valid = false;
         }
         if (!item || !Number.isInteger(item.order)) {
@@ -144,6 +172,10 @@
           addProblem(problems, scope, "title", "is required");
           valid = false;
         }
+        if (item && item.description !== undefined && typeof item.description !== "string") {
+          addProblem(problems, scope, "description", "must be a string");
+          valid = false;
+        }
         if (!item || !Array.isArray(item.concepts)) {
           addProblem(problems, scope, "concepts", "must be an array");
           valid = false;
@@ -152,8 +184,8 @@
           valid = false;
         }
         if (valid) {
-          practicalIds.add(item.id);
-          practicalCandidates.push(item);
+          taskIds.add(item.id);
+          taskCandidates.push(item);
         }
       });
     }
@@ -173,30 +205,30 @@
           valid = false;
         }
         if (!item || !TYPES.includes(item.type)) {
-          addProblem(problems, scope, "type", "must be mistake, why, or tool");
+          addProblem(problems, scope, "type", "must be note, why, or tool");
           valid = false;
         }
         if (!item || !moduleIds.has(item.module)) {
           addProblem(problems, scope, "module", "unknown module");
           valid = false;
         }
-        if (!item || !Object.prototype.hasOwnProperty.call(item, "practical")) {
-          addProblem(problems, scope, "practical", "is required; use null only for module-wide tools");
-          valid = false;
-        } else if (item.practical === null) {
-          if (item.type !== "tool") {
-            addProblem(problems, scope, "practical", "only tools can be module-wide");
-            valid = false;
-          }
-        } else if (!practicalIds.has(item.practical)) {
-          addProblem(problems, scope, "practical", "unknown practical");
+        if (!item || !isString(item.task) || !taskIds.has(item.task)) {
+          addProblem(problems, scope, "task", "must link to a known task");
           valid = false;
         } else {
-          const practical = practicalCandidates.find(function (candidate) { return candidate.id === item.practical; });
-          if (practical && practical.module !== item.module) {
-            addProblem(problems, scope, "module", "does not match the practical's module");
+          const task = taskCandidates.find(function (candidate) { return candidate.id === item.task; });
+          if (task && task.module !== item.module) {
+            addProblem(problems, scope, "module", "does not match the task's module");
             valid = false;
           }
+          if (task && task.area !== item.area) {
+            addProblem(problems, scope, "area", "does not match the task's area");
+            valid = false;
+          }
+        }
+        if (!item || !areaIds.has(item.area)) {
+          addProblem(problems, scope, "area", "unknown area");
+          valid = false;
         }
         if (!item || !Array.isArray(item.concepts)) {
           addProblem(problems, scope, "concepts", "must be an array");
@@ -217,12 +249,16 @@
           addProblem(problems, scope, "priority", "must be an integer");
           valid = false;
         }
-        const requiredFields = item && item.type === "mistake"
-          ? ["error", "consequence", "cause", "prevention"]
+        if (item && item.kind !== undefined && typeof item.kind !== "string") {
+          addProblem(problems, scope, "kind", "must be a string");
+          valid = false;
+        }
+        const requiredFields = item && item.type === "note"
+          ? ["title", "body"]
           : item && item.type === "why"
             ? ["question", "reason"]
             : item && item.type === "tool"
-              ? ["name", "use_when", "why", "needed_by"]
+              ? ["name", "use_when", "why"]
               : [];
         requiredFields.forEach(function (field) {
           if (!isString(item[field])) {
@@ -245,21 +281,12 @@
       });
     }
 
-    let config = { suggest_url: "" };
-    if (typeof BT_CONFIG !== "undefined") {
-      if (!BT_CONFIG || (BT_CONFIG.suggest_url !== undefined && !validHttps(BT_CONFIG.suggest_url))) {
-        addProblem(problems, "config", "suggest_url", "must be empty or a safe HTTPS URL");
-      } else {
-        config = { suggest_url: BT_CONFIG.suggest_url || "" };
-      }
-    }
-
     return {
       modules: modules,
-      practicals: practicalCandidates,
+      areas: areas,
+      tasks: taskCandidates,
       concepts: concepts,
       entries: entries,
-      config: config,
       problems: problems
     };
   }
@@ -288,36 +315,36 @@
   function metadata(item) {
     const footer = element("div", { className: "card-footer" }, [
       confidenceBadge(item),
-      text("span", "Written " + item.year)
+      text("span", "Notebook · " + item.year)
     ]);
     const old = item.confidence === "outdated" || new Date().getFullYear() - item.year >= 3;
     return [footer, old ? text("p", "Check that this still applies.", "stale") : null];
   }
 
-  function entryCount(practical, type) {
-    return state.entries.filter(function (item) {
-      return item.type === type && (item.practical === practical.id || (type === "tool" && item.practical === null && item.module === practical.module));
-    }).length;
+  function areaById(id) {
+    return state.areas.find(function (item) { return item.id === id; });
   }
 
-  function practicalCounts(practical) {
-    function count(type, one, many) {
-      const amount = entryCount(practical, type);
-      return amount + " " + (amount === 1 ? one : many);
-    }
-    return count("mistake", "mistake", "mistakes")
-      + " · " + count("why", "question", "questions")
-      + " · " + count("tool", "tool", "tools");
+  function areaHref(moduleId, areaId) {
+    return "?module=" + encodeURIComponent(moduleId) + "&area=" + encodeURIComponent(areaId);
+  }
+
+  function taskHref(task) {
+    return areaHref(task.module, task.area) + "&task=" + encodeURIComponent(task.id);
+  }
+
+  function entriesForTask(task) {
+    return state.entries.filter(function (item) { return item.task === task.id; });
   }
 
   function renderHome(message) {
-    document.title = "Before Tomorrow | Biology Practical Companion";
+    document.title = "Before Tomorrow | Biology Study Notebook";
     const fragment = document.createDocumentFragment();
     const hero = element("section", { className: "notebook-hero" });
     const introduction = element("div", { className: "notebook-introduction" }, [
       text("p", "A NOTEBOOK FOR THE NEXT LAB", "eyebrow"),
       text("h1", "Before Tomorrow"),
-      text("p", "Good lab advice travels. This is a place for students to pass on the little things they wish they’d known before a practical.", "subtitle"),
+      text("p", "Find a task, catch the easy-to-miss details, and carry a useful tip into your next session.", "subtitle"),
       createDisclaimer()
     ]);
     const story = notebookStoryDialog();
@@ -325,11 +352,7 @@
       text("span", "FIELD NOTES", "cover-kicker"),
       text("span", "✳", "cover-mark"),
       text("span", "For the next pair of hands", "cover-caption"),
-      element("button", {
-        type: "button",
-        className: "notebook-open",
-        text: "Open the notebook"
-      })
+      element("button", { type: "button", className: "notebook-open", text: "Open the notebook" })
     ]);
     cover.querySelector("button").addEventListener("click", function () {
       if (typeof story.showModal === "function") story.showModal();
@@ -340,59 +363,39 @@
     fragment.appendChild(story);
     if (message) fragment.appendChild(element("p", { className: "status", role: "status", text: message }));
 
-    let lastPracticalId = "";
-    try {
-      lastPracticalId = localStorage.getItem("bt:lastPractical") || "";
-    } catch (error) {
-      console.warn("Could not read the last practical from browser storage.", error);
-    }
-    const lastPractical = state.practicals.find(function (item) { return item.id === lastPracticalId; });
-    if (lastPractical) {
-      fragment.appendChild(element("a", {
-        href: "?practical=" + encodeURIComponent(lastPractical.id),
-        className: "button",
-        text: "Continue: " + lastPractical.title
-      }));
-    }
-
     fragment.appendChild(element("div", { className: "section-heading" }, [
-      text("p", "CHOOSE A BENCH", "eyebrow"),
-      text("h2", "Find your practical")
+      text("p", "BROWSE YOUR MODULE", "eyebrow"),
+      text("h2", "What are you working on?")
     ]));
     state.modules.forEach(function (module) {
       const section = element("section", { className: "module-block" });
       section.appendChild(element("div", { className: "module-heading" }, [
-        text("span", "LAB NOTES", "module-kicker"),
+        text("span", "MODULE NOTEBOOK", "module-kicker"),
         text("h3", module.title)
       ]));
-      const practicals = state.practicals.filter(function (item) { return item.module === module.id; })
-        .sort(function (a, b) { return a.order - b.order || a.title.localeCompare(b.title); });
-      if (!practicals.length) {
-        section.appendChild(element("p", {
-          className: "empty-note",
-          text: "The first note for this module is waiting to be passed on."
-        }));
-      } else {
-        const list = element("ul", { className: "practical-list" });
-        practicals.forEach(function (practical) {
-          const link = element("a", {
-            href: "?practical=" + encodeURIComponent(practical.id),
-            className: "practical-link"
-          }, [
-            text("span", practical.title, "practical-title"),
-            text("span", practicalCounts(practical), "counts")
-          ]);
-          list.appendChild(element("li", {}, [link]));
-        });
-        section.appendChild(list);
-      }
+      const areas = element("div", { className: "area-grid" });
+      state.areas.forEach(function (area) {
+        const tasks = state.tasks.filter(function (task) { return task.module === module.id && task.area === area.id; });
+        const noteCount = state.entries.filter(function (entry) {
+          return tasks.some(function (task) { return task.id === entry.task; });
+        }).length;
+        areas.appendChild(element("a", {
+          href: areaHref(module.id, area.id),
+          className: "area-card"
+        }, [
+          text("span", area.mark || "•", "area-mark"),
+          element("span", {}, [
+            text("strong", area.title),
+            text("small", area.description)
+          ]),
+          text("span", tasks.length
+            ? tasks.length + (tasks.length === 1 ? " task" : " tasks") + (noteCount ? " · " + noteCount + (noteCount === 1 ? " tip" : " tips") : "")
+            : "Start exploring", "area-count")
+        ]));
+      });
+      section.appendChild(areas);
       fragment.appendChild(section);
     });
-    fragment.appendChild(element("a", {
-      href: "?view=tools",
-      className: "secondary-link",
-      text: "Little things that make lab smoother"
-    }));
     replaceMain(fragment);
     renderFooter();
     showDebug();
@@ -413,8 +416,8 @@
       autofocus: true,
       text: "A notebook passed hand to hand"
     }));
-    dialog.appendChild(text("p", "The story goes that this notebook travelled from one generation of demonstrators to the next, gathering the little lessons they wished they’d known before a practical."));
-    dialog.appendChild(text("p", "Now students carry that spirit forward by sharing what helped them. The old notebook is part of the story; the tips are student contributions, not official instructions."));
+    dialog.appendChild(text("p", "Imagine a notebook passed from one pair of hands to the next. Its pages are not another copy of the protocol; they hold the small moments that can change how a result reads: a late measurement, a tube that looks just like its neighbour, or one point that refuses to fit."));
+    dialog.appendChild(text("p", "Each tip gives you a pause point: what might go wrong, why it matters, and what to check before you move on. Take what helps, keep your own notes however you like, and let your current module brief and demonstrator lead on methods and safety."));
     dialog.appendChild(close);
     dialog.addEventListener("cancel", function (event) {
       event.preventDefault();
@@ -439,19 +442,11 @@
     ]);
   }
 
-  function practicalEntries(practical) {
-    return state.entries.filter(function (item) {
-      return item.practical === practical.id
-        || (item.type === "tool" && item.practical === null && item.module === practical.module);
-    });
-  }
-
-  function mistakeCard(item, hidden) {
-    const card = element("article", { className: "card" + (hidden ? " hidden extra-mistake" : "") });
-    card.appendChild(text("h3", item.error));
-    card.appendChild(row("What happens", item.consequence));
-    card.appendChild(row("Why it happens", item.cause));
-    card.appendChild(row("How to avoid it", item.prevention, "prevention"));
+  function noteCard(item) {
+    const card = element("article", { className: "card note-card" });
+    if (item.kind) card.appendChild(text("span", item.kind, "note-kind"));
+    card.appendChild(text("h3", item.title));
+    card.appendChild(text("p", item.body, "note-body"));
     metadata(item).forEach(function (node) { if (node) card.appendChild(node); });
     return card;
   }
@@ -469,7 +464,7 @@
     card.appendChild(text("h3", item.name));
     card.appendChild(row("Use it when", item.use_when));
     card.appendChild(row("Why it helps", item.why));
-    card.appendChild(row("Learn it by", item.needed_by, "prevention"));
+    if (item.needed_by) card.appendChild(row("Learn it by", item.needed_by, "prevention"));
     if (item.link) {
       card.appendChild(element("a", {
         href: item.link,
@@ -485,90 +480,148 @@
     return card;
   }
 
-  function renderPractical(practical) {
-    document.title = practical.title + " | Before Tomorrow";
-    try {
-      localStorage.setItem("bt:lastPractical", practical.id);
-    } catch (error) {
-      console.warn("Could not save the last practical in browser storage.", error);
+  function breadcrumb(module, area, includeTask) {
+    const nav = element("nav", { className: "breadcrumbs", "aria-label": "Notebook location" });
+    nav.appendChild(element("a", { href: "index.html", text: "Notebook" }));
+    nav.appendChild(text("span", "›", "crumb-divider"));
+    nav.appendChild(element("a", { href: areaHref(module.id, area.id), text: module.title + " · " + area.title }));
+    if (includeTask) {
+      nav.appendChild(text("span", "›", "crumb-divider"));
+      nav.appendChild(text("span", includeTask.title, "current-crumb"));
+    }
+    return nav;
+  }
+
+  function renderArea(module, area) {
+    document.title = area.title + " · " + module.title + " | Before Tomorrow";
+    const tasks = state.tasks.filter(function (task) {
+      return task.module === module.id && task.area === area.id;
+    }).sort(function (a, b) { return a.order - b.order || a.title.localeCompare(b.title); });
+    const fragment = document.createDocumentFragment();
+    fragment.appendChild(breadcrumb(module, area, null));
+    fragment.appendChild(text("p", module.title + " · NOTEBOOK SECTION", "eyebrow"));
+    fragment.appendChild(text("h1", area.title));
+    fragment.appendChild(text("p", area.description, "subtitle"));
+    fragment.appendChild(createDisclaimer());
+
+    if (tasks.length > 4) {
+      const search = element("input", {
+        type: "search",
+        id: "task-search",
+        className: "task-search",
+        placeholder: "Search tasks in " + area.title.toLowerCase(),
+        "aria-label": "Search tasks"
+      });
+      fragment.appendChild(element("label", { className: "search-label", for: "task-search", text: "Find a task" }));
+      fragment.appendChild(search);
     }
 
-    const entries = practicalEntries(practical);
-    const mistakes = entries.filter(function (item) { return item.type === "mistake"; }).sort(comparePriority);
-    const questions = entries.filter(function (item) { return item.type === "why"; }).sort(comparePriority);
-    const tools = entries.filter(function (item) { return item.type === "tool"; }).sort(comparePriority);
-    const concepts = practical.concepts.map(function (id) {
+    const list = element("div", { className: "task-grid", id: "task-list" });
+    tasks.forEach(function (task) {
+      const noteCount = entriesForTask(task).length;
+      const card = element("a", {
+        href: taskHref(task),
+        className: "task-card",
+        "data-search": (task.title + " " + (task.description || "")).toLowerCase()
+      }, [
+        text("span", task.area === "practicals" ? "LAB SESSION" : area.title.toUpperCase(), "task-kicker"),
+        text("strong", task.title),
+        task.description ? text("span", task.description, "task-description") : null,
+        text("span", noteCount ? noteCount + (noteCount === 1 ? " tip" : " tips") : "No tips yet", "task-count")
+      ]);
+      list.appendChild(card);
+    });
+
+    if (!tasks.length) {
+      fragment.appendChild(element("section", { className: "empty-page" }, [
+        text("span", area.mark || "✎", "empty-mark"),
+        text("h2", "A space for the useful bits"),
+        text("p", "Add a task only when there’s something worth passing on. Some sessions are straightforward and don’t need a page of their own.")
+      ]));
+    } else {
+      const emptySearch = element("p", { id: "task-search-empty", className: "empty-note", role: "status", hidden: true, text: "No tasks match that search." });
+      fragment.appendChild(list);
+      fragment.appendChild(emptySearch);
+      if (tasks.length > 4) {
+        const search = fragment.querySelector("#task-search");
+        search.addEventListener("input", function () {
+          const query = search.value.trim().toLowerCase();
+          let visible = 0;
+          list.querySelectorAll(".task-card").forEach(function (card) {
+            card.hidden = !card.dataset.search.includes(query);
+            if (!card.hidden) visible += 1;
+          });
+          emptySearch.hidden = visible !== 0;
+        });
+      }
+    }
+    replaceMain(fragment);
+    renderFooter();
+    showDebug();
+  }
+
+  function renderTask(task) {
+    const area = areaById(task.area);
+    const module = state.modules.find(function (item) { return item.id === task.module; });
+    document.title = task.title + " | Before Tomorrow";
+    const entries = entriesForTask(task).sort(comparePriority);
+    const notes = entries.filter(function (item) { return item.type === "note"; });
+    const questions = entries.filter(function (item) { return item.type === "why"; });
+    const tools = entries.filter(function (item) { return item.type === "tool"; });
+    const concepts = task.concepts.map(function (id) {
       return state.concepts.find(function (item) { return item.id === id; });
     }).filter(Boolean);
-
     const fragment = document.createDocumentFragment();
-    fragment.appendChild(element("a", { href: "index.html", className: "back-link", text: "← All practicals" }));
-    fragment.appendChild(element("div", { className: "title-line" }, [
-      element("h1", { text: practical.title }),
-      text("span", moduleTitle(practical.module), "chip")
-    ]));
+    fragment.appendChild(breadcrumb(module, area, task));
+    fragment.appendChild(text("p", module.title + " · " + area.title.toUpperCase(), "eyebrow"));
+    fragment.appendChild(text("h1", task.title));
+    if (task.description) fragment.appendChild(text("p", task.description, "subtitle"));
     fragment.appendChild(createDisclaimer());
 
     const sections = [
-      [mistakes, "mistakes", "Things that can catch you out"],
-      [questions, "questions", "Questions to take with you"],
-      [tools, "tools", "Useful tools"],
-      [concepts, "concepts", "Ideas to revisit"]
+      [notes, "notes", "Easy-to-miss moments"],
+      [questions, "questions", "Questions to think about"],
+      [tools, "tools", "Useful tools"]
     ];
-    const jumps = element("nav", { className: "jump-links", "aria-label": "On this page" });
-    sections.forEach(function (section) {
-      if (section[0].length) {
-        jumps.appendChild(element("a", { href: "#" + section[1], text: section[2] }));
-      }
-    });
-    fragment.appendChild(jumps);
-
+    if (entries.length > 5) {
+      const search = element("input", {
+        type: "search",
+        id: "note-search",
+        className: "task-search",
+        placeholder: "Search tips on this page",
+        "aria-label": "Search tips on this page"
+      });
+      fragment.appendChild(element("label", { className: "search-label", for: "note-search", text: "Find a note" }));
+      fragment.appendChild(search);
+      const emptySearch = element("p", { className: "empty-note", role: "status", hidden: true, text: "No tips match that search." });
+      fragment.appendChild(emptySearch);
+      search.addEventListener("input", function () {
+        const query = search.value.trim().toLowerCase();
+        let visible = 0;
+        app.querySelectorAll(".note-card, .entry, .card").forEach(function (card) {
+          card.hidden = !card.textContent.toLowerCase().includes(query);
+          if (!card.hidden) visible += 1;
+        });
+        emptySearch.hidden = visible !== 0;
+      });
+    }
     if (!entries.length) {
       fragment.appendChild(element("section", { className: "empty-page" }, [
         text("span", "✎", "empty-mark"),
-        text("h2", "A fresh page"),
-        text("p", "This page is ready for the small lessons students choose to pass on after this practical.")
+        text("h2", "A little room to breathe"),
+        text("p", "This task may be simple, and that’s perfectly fine. Keep only the tips that genuinely help.")
       ]));
     }
-    if (mistakes.length) {
-      const section = element("section", { id: "mistakes" });
-      section.appendChild(text("h2", "Things that can catch you out"));
-      mistakes.forEach(function (item, index) { section.appendChild(mistakeCard(item, index >= 3)); });
-      if (mistakes.length > 3) {
-        const button = element("button", {
-          type: "button",
-          "aria-expanded": "false",
-          "aria-controls": "extra-mistakes",
-          text: "Show " + (mistakes.length - 3) + " more"
-        });
-        const wrapper = element("div", { id: "extra-mistakes" });
-        Array.from(section.querySelectorAll(".extra-mistake")).forEach(function (card) { wrapper.appendChild(card); });
-        button.addEventListener("click", function () {
-          const expanded = button.getAttribute("aria-expanded") === "true";
-          wrapper.querySelectorAll(".extra-mistake").forEach(function (card) { card.classList.toggle("hidden", expanded); });
-          button.setAttribute("aria-expanded", String(!expanded));
-          button.textContent = expanded ? "Show " + (mistakes.length - 3) + " more" : "Show fewer";
-        });
-        section.appendChild(wrapper);
-        section.appendChild(button);
-      }
-      fragment.appendChild(section);
-    }
-    if (questions.length) {
-      const section = element("section", { id: "questions" }, [
-        text("h2", "Questions to take with you"),
-        text("p", "A few prompts to help you feel ready. Open one when you want to think it through.")
-      ]);
-      questions.forEach(function (item) { section.appendChild(whyEntry(item)); });
-      fragment.appendChild(section);
-    }
-    if (tools.length) {
-      const section = element("section", { id: "tools" }, [text("h2", "Useful tools")]);
-      tools.forEach(function (item) { section.appendChild(toolCard(item)); });
-      fragment.appendChild(section);
-    }
+    sections.forEach(function (section) {
+      if (!section[0].length) return;
+      const content = element("section", { className: "task-notes", id: section[1] }, [text("h2", section[2])]);
+      section[0].forEach(function (item) {
+        content.appendChild(item.type === "note" ? noteCard(item) : item.type === "why" ? whyEntry(item) : toolCard(item));
+      });
+      fragment.appendChild(content);
+    });
     if (concepts.length) {
-      const section = element("section", { id: "concepts" }, [text("h2", "Ideas to revisit")]);
+      const section = element("section", { className: "task-notes", id: "concepts" }, [text("h2", "Ideas to revisit")]);
       const list = element("ul", { className: "concept-list" });
       concepts.forEach(function (concept) {
         const item = element("li", {}, [text("strong", concept.label)]);
@@ -578,7 +631,7 @@
             href: concept.revise_url,
             target: "_blank",
             rel: "noopener noreferrer",
-            text: "Revise"
+            text: "Open revision resource"
           }));
         }
         list.appendChild(item);
@@ -587,7 +640,7 @@
       fragment.appendChild(section);
     }
     const share = element("button", { type: "button", text: "Share this page" });
-    share.addEventListener("click", function () { sharePage(practical.title); });
+    share.addEventListener("click", function () { sharePage(task.title); });
     fragment.appendChild(element("div", { className: "share-row" }, [share]));
     replaceMain(fragment);
     renderFooter();
@@ -640,61 +693,9 @@
     window.setTimeout(function () { liveStatus.textContent = message; }, 10);
   }
 
-  function renderTools(moduleId) {
-    document.title = "Useful lab tools | Before Tomorrow";
-    const validModule = state.modules.some(function (item) { return item.id === moduleId; }) ? moduleId : "";
-    const fragment = document.createDocumentFragment();
-    fragment.appendChild(element("a", { href: "index.html", className: "back-link", text: "← All practicals" }));
-    fragment.appendChild(element("h1", { text: "Useful lab tools" }));
-    fragment.appendChild(text("p", "Small discoveries that can make your next lab feel easier.", "subtitle"));
-    fragment.appendChild(createDisclaimer());
-
-    const filters = element("nav", { className: "filters", "aria-label": "Filter tools by module" });
-    [{ id: "", title: "All modules" }].concat(state.modules).forEach(function (module) {
-      const href = module.id ? "?view=tools&module=" + encodeURIComponent(module.id) : "?view=tools";
-      filters.appendChild(element("a", {
-        href: href,
-        className: "filter-button",
-        "aria-current": module.id === validModule ? "page" : "false",
-        text: module.title
-      }));
-    });
-    fragment.appendChild(filters);
-
-    const tools = state.entries.filter(function (item) {
-      return item.type === "tool" && (!validModule || item.module === validModule);
-    }).sort(function (a, b) {
-      return a.module.localeCompare(b.module) || comparePriority(a, b) || a.name.localeCompare(b.name);
-    });
-    if (!tools.length) {
-      fragment.appendChild(element("section", { className: "empty-page" }, [
-        text("span", "✎", "empty-mark"),
-        text("h2", "A fresh page"),
-        text("p", "This page is ready for the handy little discoveries students pass on to each other.")
-      ]));
-    }
-    tools.forEach(function (item) {
-      const section = element("section");
-      section.appendChild(text("p", moduleTitle(item.module), "chip"));
-      section.appendChild(toolCard(item));
-      fragment.appendChild(section);
-    });
-    replaceMain(fragment);
-    renderFooter();
-    showDebug();
-  }
-
   function renderFooter() {
     clear(siteFooter);
-    siteFooter.appendChild(text("p", "Pass a useful lesson to the next lab group."));
-    if (state.config.suggest_url) {
-      siteFooter.appendChild(element("a", {
-        href: state.config.suggest_url,
-        target: "_blank",
-        rel: "noopener noreferrer",
-        text: "Suggest an entry"
-      }));
-    }
+    siteFooter.appendChild(text("p", "Small details can make the next lab easier."));
   }
 
   function showDebug() {
@@ -708,12 +709,12 @@
       state.problems.forEach(function (problem) { list.appendChild(text("li", problem)); });
       panel.appendChild(list);
     }
-    state.practicals.forEach(function (practical) {
-      const entries = practicalEntries(practical);
+    state.tasks.forEach(function (task) {
+      const entries = entriesForTask(task);
       const counts = TYPES.map(function (type) {
         return type + "=" + entries.filter(function (item) { return item.type === type; }).length;
       }).join(", ");
-      panel.appendChild(text("p", practical.id + ": " + counts));
+      panel.appendChild(text("p", task.id + ": " + counts));
     });
     app.appendChild(panel);
   }
@@ -725,16 +726,23 @@
 
   function route() {
     const params = new URLSearchParams(location.search);
-    const practicalId = params.get("practical");
-    if (practicalId) {
-      const practical = state.practicals.find(function (item) { return item.id === practicalId; });
-      if (practical) renderPractical(practical);
-      else renderHome("We couldn't find that practical.");
-    } else if (params.get("view") === "tools") {
-      renderTools(params.get("module") || "");
-    } else {
-      renderHome("");
+    const taskId = params.get("task");
+    const areaId = params.get("area");
+    const moduleId = params.get("module");
+    if (taskId) {
+      const task = state.tasks.find(function (item) { return item.id === taskId; });
+      if (task && (!moduleId || task.module === moduleId) && (!areaId || task.area === areaId)) renderTask(task);
+      else renderHome("We couldn't find that notebook page.");
+      return;
     }
+    if (moduleId || areaId) {
+      const module = state.modules.find(function (item) { return item.id === moduleId; });
+      const area = areaById(areaId);
+      if (module && area) renderArea(module, area);
+      else renderHome("Choose a module and notebook section to continue.");
+      return;
+    }
+    renderHome("");
   }
 
   function fatal(error) {
