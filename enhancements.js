@@ -732,4 +732,122 @@
     reviewStudyNext = true;
     showChallengeIntro("resit");
   };
+
+  const accountStyles = document.createElement("style");
+  accountStyles.textContent = `
+    .account-card{margin:0 0 18px;padding:16px;border:1px solid #d8e0e8;border-radius:12px;background:#fff}
+    .account-card h2{margin:0;color:#102a43;font-size:19px}
+    .account-card p{margin:5px 0;color:#526477}
+    .account-card .account-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:12px}
+    .account-card #account-user-button{min-height:40px}
+    .account-card #account-sign-in{flex-basis:100%;margin-top:8px}
+    .account-card #account-status{font-size:14px}
+  `;
+  document.head.append(accountStyles);
+
+  const accountCard = document.createElement("section");
+  accountCard.className = "account-card";
+  accountCard.setAttribute("aria-labelledby", "account-heading");
+  accountCard.innerHTML = `
+    <h2 id="account-heading">Optional learning account</h2>
+    <p>Sign in or create an account with Clerk. The game works without signing in.</p>
+    <div class="account-controls">
+      <button id="account-open-sign-in" class="next" type="button">Sign in or create an account</button>
+      <div id="account-user-button" hidden></div>
+      <div id="account-sign-in" hidden></div>
+    </div>
+    <p id="account-status" role="status" aria-live="polite">Connecting to Clerk…</p>
+    <p class="small">Scores and revision progress are still stored in this browser; signing in does not sync them.</p>
+  `;
+  homeCard.querySelector(".lobby-content").prepend(accountCard);
+
+  const accountStatus = accountCard.querySelector("#account-status");
+  const signInButton = accountCard.querySelector("#account-open-sign-in");
+  const signInContainer = accountCard.querySelector("#account-sign-in");
+  const userButtonContainer = accountCard.querySelector("#account-user-button");
+  const publishableKey = "pk_test_aWRlYWwtcHVtYS0zNDcwLmNsZXJrLmFjY291bnRzLmRldiQ";
+  const clerkOrigin = "https://ideal-puma-3470.clerk.accounts.dev";
+  let clerk;
+  let signInMounted = false;
+  let userButtonMounted = false;
+
+  function showAccountError(error) {
+    accountStatus.textContent = "Sign-in could not load. The game is still available; check your connection and reload to try again.";
+    console.error("Clerk account setup failed:", error);
+  }
+
+  function loadClerkScript(src, key) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = src;
+      script.crossOrigin = "anonymous";
+      if (key) script.dataset.clerkPublishableKey = key;
+      script.onload = resolve;
+      script.onerror = () => reject(new Error(`Could not load Clerk script: ${src}`));
+      document.head.append(script);
+    });
+  }
+
+  function renderAccount(user) {
+    try {
+      if (user) {
+        if (signInMounted) {
+          clerk.unmountSignIn(signInContainer);
+          signInMounted = false;
+        }
+        signInContainer.hidden = true;
+        signInButton.hidden = true;
+        userButtonContainer.hidden = false;
+        accountStatus.textContent = `Signed in as ${user.firstName || user.username || user.primaryEmailAddress?.emailAddress || "a Clerk user"}.`;
+        if (!userButtonMounted) {
+          clerk.mountUserButton(userButtonContainer);
+          userButtonMounted = true;
+        }
+        return;
+      }
+
+      if (userButtonMounted) {
+        clerk.unmountUserButton(userButtonContainer);
+        userButtonMounted = false;
+      }
+      userButtonContainer.hidden = true;
+      signInButton.hidden = false;
+      accountStatus.textContent = "Your account is optional; your game progress stays in this browser.";
+    } catch (error) {
+      showAccountError(error);
+    }
+  }
+
+  signInButton.addEventListener("click", () => {
+    try {
+      signInContainer.hidden = false;
+      if (!signInMounted) {
+        clerk.mountSignIn(signInContainer);
+        signInMounted = true;
+      }
+      accountStatus.textContent = "Sign in or create an account using the form below.";
+    } catch (error) {
+      showAccountError(error);
+    }
+  });
+
+  async function initializeClerk() {
+    if (location.protocol === "file:") {
+      accountStatus.textContent = "To use Clerk sign-in, open the game over localhost or HTTPS. The game still works from this file.";
+      return;
+    }
+
+    await loadClerkScript(`${clerkOrigin}/npm/@clerk/ui@1/dist/ui.browser.js`);
+    await loadClerkScript(`${clerkOrigin}/npm/@clerk/clerk-js@6/dist/clerk.browser.js`, publishableKey);
+    clerk = window.Clerk;
+    if (!clerk) throw new Error("The Clerk JavaScript SDK did not initialize.");
+
+    await clerk.load({ ui: { ClerkUI: window.__internal_ClerkUICtor } });
+    renderAccount(clerk.user);
+    clerk.addListener(({ user }) => {
+      if (user !== undefined) renderAccount(user);
+    }, { skipInitialEmit: true });
+  }
+
+  initializeClerk().catch(showAccountError);
 })();

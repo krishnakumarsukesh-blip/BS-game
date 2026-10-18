@@ -4,7 +4,7 @@ A biology practical revision game for BS1030 and BS1040. The demonstrator is fic
 
 ## Play
 
-Open `index.html` in a browser. The game includes:
+Open `index.html` in a browser to play. To use Clerk sign-in, serve the folder over localhost or HTTPS (for example, run `python -m http.server 8000` here and open `http://localhost:8000`); Clerk does not run on `file://` pages. The game includes:
 
 - The standard practical, a quick bench, and a daily mini practical.
 - Topic-filtered rounds with adjustable lengths.
@@ -13,4 +13,4 @@ Open `index.html` in a browser. The game includes:
 - A calmer welcome lobby, optional settings, and short demonstrator briefings and sign-offs for each mode.
 - The three-chapter Missing-Label Mystery: short, repeatable investigation sessions where correct answers uncover clues and mistakes come with explanations instead of penalties. Story progress is saved locally and included in progress exports.
 
-Scores and progress are stored in the current browser. The leaderboard is local to that browser; there is no online account or shared leaderboard.
+Sign-in and account management are provided by Clerk and are optional. Scores, achievements, and revision progress remain in the current browser; there is no online leaderboard or account-based progress sync.
