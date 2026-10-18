@@ -1,13 +1,13 @@
 "use strict";
 
 (function () {
-  const DISCLAIMER = "Student-written tips, not official guidance. Your practical handout, risk assessment and demonstrator always come first, especially for safety.";
+  const DISCLAIMER = "A few student-to-student notes for your next lab. For methods and safety, always follow your current practical brief and demonstrator.";
   const CONFIDENCE = {
-    checked: ["✔ Checked", "Matches course material or demonstrator advice"],
-    several: ["👥 Several students", "Reported by more than one student"],
-    single: ["🟡 One student", "A single student's experience"],
-    personal: ["🔵 Personal tip", "A preference, not a rule"],
-    outdated: ["⚠ May be outdated", "The course or software may have changed"]
+    checked: ["Course-checked", "Matches current course material"],
+    several: ["Shared by several", "Reported by more than one student"],
+    single: ["One student's tip", "One student's experience"],
+    personal: ["Personal tip", "A preference, not a rule"],
+    outdated: ["Worth rechecking", "The course or software may have changed"]
   };
   const TYPES = ["mistake", "why", "tool"];
   const app = document.getElementById("app");
@@ -151,10 +151,6 @@
           addProblem(problems, scope, "concepts", "contains an unknown concept");
           valid = false;
         }
-        if (item && item.placeholder !== undefined && typeof item.placeholder !== "boolean") {
-          addProblem(problems, scope, "placeholder", "must be a boolean");
-          valid = false;
-        }
         if (valid) {
           practicalIds.add(item.id);
           practicalCandidates.push(item);
@@ -221,11 +217,6 @@
           addProblem(problems, scope, "priority", "must be an integer");
           valid = false;
         }
-        if (item && item.placeholder !== undefined && typeof item.placeholder !== "boolean") {
-          addProblem(problems, scope, "placeholder", "must be a boolean");
-          valid = false;
-        }
-
         const requiredFields = item && item.type === "mistake"
           ? ["error", "consequence", "cause", "prevention"]
           : item && item.type === "why"
@@ -277,23 +268,6 @@
     return text("p", DISCLAIMER, "disclaimer");
   }
 
-  function placeholderBanner() {
-    const hasPlaceholders = state.practicals.some(function (item) { return item.placeholder === true; })
-      || state.entries.some(function (item) { return item.placeholder === true; });
-    return hasPlaceholders
-      ? text("p", "Demo only: the labelled examples below are fictional placeholders, not student advice. No real student submissions have been added yet.", "banner")
-      : null;
-  }
-
-  function addPageCommon(container) {
-    const banner = placeholderBanner();
-    if (banner) container.appendChild(banner);
-  }
-
-  function placeholderRibbon(item) {
-    return item.placeholder === true ? text("span", "Fictional example · not real advice", "ribbon") : null;
-  }
-
   function priority(item) {
     return Number.isInteger(item.priority) ? item.priority : 99;
   }
@@ -302,31 +276,22 @@
     return priority(a) - priority(b) || a.id.localeCompare(b.id);
   }
 
+  function moduleTitle(id) {
+    const module = state.modules.find(function (item) { return item.id === id; });
+    return module ? module.title : id;
+  }
+
   function confidenceBadge(item) {
     return text("span", CONFIDENCE[item.confidence][0], "badge");
   }
 
   function metadata(item) {
-    if (item.placeholder === true) {
-      return [text("p", "Fictional demonstration only; not checked or reported by students.", "muted")];
-    }
     const footer = element("div", { className: "card-footer" }, [
       confidenceBadge(item),
       text("span", "Written " + item.year)
     ]);
     const old = item.confidence === "outdated" || new Date().getFullYear() - item.year >= 3;
     return [footer, old ? text("p", "Check that this still applies.", "stale") : null];
-  }
-
-  function labelLegend() {
-    const details = element("details", { id: "labels" });
-    details.appendChild(text("summary", "What do the labels mean?"));
-    const list = element("ul", { className: "legend-list" });
-    Object.keys(CONFIDENCE).forEach(function (key) {
-      list.appendChild(text("li", CONFIDENCE[key][0] + ": " + CONFIDENCE[key][1]));
-    });
-    details.appendChild(list);
-    return details;
   }
 
   function entryCount(practical, type) {
@@ -348,15 +313,32 @@
   function renderHome(message) {
     document.title = "Before Tomorrow | Biology Practical Companion";
     const fragment = document.createDocumentFragment();
-    fragment.appendChild(text("p", "BIOLOGY PRACTICAL COMPANION", "eyebrow"));
-    fragment.appendChild(text("h1", "Before Tomorrow"));
-    fragment.appendChild(text("p", "What biology students discover too late.", "subtitle"));
-    fragment.appendChild(createDisclaimer());
-    addPageCommon(fragment);
+    const hero = element("section", { className: "notebook-hero" });
+    const introduction = element("div", { className: "notebook-introduction" }, [
+      text("p", "A NOTEBOOK FOR THE NEXT LAB", "eyebrow"),
+      text("h1", "Before Tomorrow"),
+      text("p", "Good lab advice travels. This is a place for students to pass on the little things they wish they’d known before a practical.", "subtitle"),
+      createDisclaimer()
+    ]);
+    const story = notebookStoryDialog();
+    const cover = element("div", { className: "notebook-cover" }, [
+      text("span", "FIELD NOTES", "cover-kicker"),
+      text("span", "✳", "cover-mark"),
+      text("span", "For the next pair of hands", "cover-caption"),
+      element("button", {
+        type: "button",
+        className: "notebook-open",
+        text: "Open the notebook"
+      })
+    ]);
+    cover.querySelector("button").addEventListener("click", function () {
+      if (typeof story.showModal === "function") story.showModal();
+    });
+    hero.appendChild(introduction);
+    hero.appendChild(cover);
+    fragment.appendChild(hero);
+    fragment.appendChild(story);
     if (message) fragment.appendChild(element("p", { className: "status", role: "status", text: message }));
-    if (!state.practicals.length) {
-      fragment.appendChild(text("p", "No practical notes are available yet. Example content will only be shown when it is clearly labelled as fictional.", "status"));
-    }
 
     let lastPracticalId = "";
     try {
@@ -373,14 +355,23 @@
       }));
     }
 
-    fragment.appendChild(text("h2", "Pick your practical"));
+    fragment.appendChild(element("div", { className: "section-heading" }, [
+      text("p", "CHOOSE A BENCH", "eyebrow"),
+      text("h2", "Find your practical")
+    ]));
     state.modules.forEach(function (module) {
       const section = element("section", { className: "module-block" });
-      section.appendChild(text("h2", module.title));
+      section.appendChild(element("div", { className: "module-heading" }, [
+        text("span", "LAB NOTES", "module-kicker"),
+        text("h3", module.title)
+      ]));
       const practicals = state.practicals.filter(function (item) { return item.module === module.id; })
         .sort(function (a, b) { return a.order - b.order || a.title.localeCompare(b.title); });
       if (!practicals.length) {
-        section.appendChild(text("p", "No practical notes added yet.", "muted"));
+        section.appendChild(element("p", {
+          className: "empty-note",
+          text: "The first note for this module is waiting to be passed on."
+        }));
       } else {
         const list = element("ul", { className: "practical-list" });
         practicals.forEach(function (practical) {
@@ -391,11 +382,7 @@
             text("span", practical.title, "practical-title"),
             text("span", practicalCounts(practical), "counts")
           ]);
-          const item = element("li");
-          const ribbon = placeholderRibbon(practical);
-          if (ribbon) item.appendChild(ribbon);
-          item.appendChild(link);
-          list.appendChild(item);
+          list.appendChild(element("li", {}, [link]));
         });
         section.appendChild(list);
       }
@@ -404,11 +391,45 @@
     fragment.appendChild(element("a", {
       href: "?view=tools",
       className: "secondary-link",
-      text: "Tools students wish they'd found earlier"
+      text: "Little things that make lab smoother"
     }));
     replaceMain(fragment);
     renderFooter();
     showDebug();
+  }
+
+  function notebookStoryDialog() {
+    const dialog = element("dialog", {
+      className: "notebook-dialog",
+      "aria-labelledby": "notebook-story-title"
+    });
+    const close = element("form", { method: "dialog", className: "dialog-actions" }, [
+      element("button", { type: "submit", text: "Tuck this note away" })
+    ]);
+    dialog.appendChild(text("p", "A little lab folklore", "eyebrow"));
+    dialog.appendChild(element("h2", {
+      id: "notebook-story-title",
+      tabindex: "-1",
+      autofocus: true,
+      text: "A notebook passed hand to hand"
+    }));
+    dialog.appendChild(text("p", "The story goes that this notebook travelled from one generation of demonstrators to the next, gathering the little lessons they wished they’d known before a practical."));
+    dialog.appendChild(text("p", "Now students carry that spirit forward by sharing what helped them. The old notebook is part of the story; the tips are student contributions, not official instructions."));
+    dialog.appendChild(close);
+    dialog.addEventListener("cancel", function (event) {
+      event.preventDefault();
+      dialog.close();
+    });
+    dialog.addEventListener("keydown", function (event) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        dialog.close();
+      }
+    });
+    dialog.addEventListener("click", function (event) {
+      if (event.target === dialog) dialog.close();
+    });
+    return dialog;
   }
 
   function row(label, value, className) {
@@ -427,8 +448,6 @@
 
   function mistakeCard(item, hidden) {
     const card = element("article", { className: "card" + (hidden ? " hidden extra-mistake" : "") });
-    const ribbon = placeholderRibbon(item);
-    if (ribbon) card.appendChild(ribbon);
     card.appendChild(text("h3", item.error));
     card.appendChild(row("What happens", item.consequence));
     card.appendChild(row("Why it happens", item.cause));
@@ -439,8 +458,6 @@
 
   function whyEntry(item) {
     const details = element("details", { className: "entry" });
-    const ribbon = placeholderRibbon(item);
-    if (ribbon) details.appendChild(ribbon);
     details.appendChild(text("summary", item.question));
     details.appendChild(text("p", item.reason));
     metadata(item).forEach(function (node) { if (node) details.appendChild(node); });
@@ -449,8 +466,6 @@
 
   function toolCard(item) {
     const card = element("article", { className: "card" });
-    const ribbon = placeholderRibbon(item);
-    if (ribbon) card.appendChild(ribbon);
     card.appendChild(text("h3", item.name));
     card.appendChild(row("Use it when", item.use_when));
     card.appendChild(row("Why it helps", item.why));
@@ -490,18 +505,15 @@
     fragment.appendChild(element("a", { href: "index.html", className: "back-link", text: "← All practicals" }));
     fragment.appendChild(element("div", { className: "title-line" }, [
       element("h1", { text: practical.title }),
-      text("span", practical.module, "chip")
+      text("span", moduleTitle(practical.module), "chip")
     ]));
-    const practicalRibbon = placeholderRibbon(practical);
-    if (practicalRibbon) fragment.appendChild(practicalRibbon);
     fragment.appendChild(createDisclaimer());
-    addPageCommon(fragment);
 
     const sections = [
-      [mistakes, "mistakes", "Top mistakes"],
-      [questions, "questions", "Questions"],
-      [tools, "tools", "Tools"],
-      [concepts, "concepts", "Concepts"]
+      [mistakes, "mistakes", "Things that can catch you out"],
+      [questions, "questions", "Questions to take with you"],
+      [tools, "tools", "Useful tools"],
+      [concepts, "concepts", "Ideas to revisit"]
     ];
     const jumps = element("nav", { className: "jump-links", "aria-label": "On this page" });
     sections.forEach(function (section) {
@@ -509,13 +521,18 @@
         jumps.appendChild(element("a", { href: "#" + section[1], text: section[2] }));
       }
     });
-    jumps.appendChild(element("a", { href: "#labels", text: "Labels explained" }));
     fragment.appendChild(jumps);
 
-    if (!entries.length) fragment.appendChild(text("p", "Nothing added for this practical yet.", "status"));
+    if (!entries.length) {
+      fragment.appendChild(element("section", { className: "empty-page" }, [
+        text("span", "✎", "empty-mark"),
+        text("h2", "A fresh page"),
+        text("p", "This page is ready for the small lessons students choose to pass on after this practical.")
+      ]));
+    }
     if (mistakes.length) {
       const section = element("section", { id: "mistakes" });
-      section.appendChild(text("h2", "Top mistakes"));
+      section.appendChild(text("h2", "Things that can catch you out"));
       mistakes.forEach(function (item, index) { section.appendChild(mistakeCard(item, index >= 3)); });
       if (mistakes.length > 3) {
         const button = element("button", {
@@ -539,19 +556,19 @@
     }
     if (questions.length) {
       const section = element("section", { id: "questions" }, [
-        text("h2", "Questions worth being able to answer"),
-        text("p", "Be ready to explain why, not just how. Open a question to check yourself.")
+        text("h2", "Questions to take with you"),
+        text("p", "A few prompts to help you feel ready. Open one when you want to think it through.")
       ]);
       questions.forEach(function (item) { section.appendChild(whyEntry(item)); });
       fragment.appendChild(section);
     }
     if (tools.length) {
-      const section = element("section", { id: "tools" }, [text("h2", "Tools worth knowing")]);
+      const section = element("section", { id: "tools" }, [text("h2", "Useful tools")]);
       tools.forEach(function (item) { section.appendChild(toolCard(item)); });
       fragment.appendChild(section);
     }
     if (concepts.length) {
-      const section = element("section", { id: "concepts" }, [text("h2", "Concepts worth revising")]);
+      const section = element("section", { id: "concepts" }, [text("h2", "Ideas to revisit")]);
       const list = element("ul", { className: "concept-list" });
       concepts.forEach(function (concept) {
         const item = element("li", {}, [text("strong", concept.label)]);
@@ -572,7 +589,6 @@
     const share = element("button", { type: "button", text: "Share this page" });
     share.addEventListener("click", function () { sharePage(practical.title); });
     fragment.appendChild(element("div", { className: "share-row" }, [share]));
-    fragment.appendChild(labelLegend());
     replaceMain(fragment);
     renderFooter();
     showDebug();
@@ -625,14 +641,13 @@
   }
 
   function renderTools(moduleId) {
-    document.title = "Tools students wish they'd found earlier | Before Tomorrow";
+    document.title = "Useful lab tools | Before Tomorrow";
     const validModule = state.modules.some(function (item) { return item.id === moduleId; }) ? moduleId : "";
     const fragment = document.createDocumentFragment();
     fragment.appendChild(element("a", { href: "index.html", className: "back-link", text: "← All practicals" }));
-    fragment.appendChild(element("h1", { text: "Tools students wish they'd found earlier" }));
-    fragment.appendChild(text("p", "Student-reported tools, not official recommendations.", "subtitle"));
+    fragment.appendChild(element("h1", { text: "Useful lab tools" }));
+    fragment.appendChild(text("p", "Small discoveries that can make your next lab feel easier.", "subtitle"));
     fragment.appendChild(createDisclaimer());
-    addPageCommon(fragment);
 
     const filters = element("nav", { className: "filters", "aria-label": "Filter tools by module" });
     [{ id: "", title: "All modules" }].concat(state.modules).forEach(function (module) {
@@ -651,14 +666,19 @@
     }).sort(function (a, b) {
       return a.module.localeCompare(b.module) || comparePriority(a, b) || a.name.localeCompare(b.name);
     });
-    if (!tools.length) fragment.appendChild(text("p", "No tools have been added yet.", "status"));
+    if (!tools.length) {
+      fragment.appendChild(element("section", { className: "empty-page" }, [
+        text("span", "✎", "empty-mark"),
+        text("h2", "A fresh page"),
+        text("p", "This page is ready for the handy little discoveries students pass on to each other.")
+      ]));
+    }
     tools.forEach(function (item) {
       const section = element("section");
-      section.appendChild(text("p", item.module, "chip"));
+      section.appendChild(text("p", moduleTitle(item.module), "chip"));
       section.appendChild(toolCard(item));
       fragment.appendChild(section);
     });
-    fragment.appendChild(labelLegend());
     replaceMain(fragment);
     renderFooter();
     showDebug();
@@ -666,7 +686,7 @@
 
   function renderFooter() {
     clear(siteFooter);
-    siteFooter.appendChild(text("p", "Student-written. Not official."));
+    siteFooter.appendChild(text("p", "Pass a useful lesson to the next lab group."));
     if (state.config.suggest_url) {
       siteFooter.appendChild(element("a", {
         href: state.config.suggest_url,

@@ -17,4 +17,4 @@ Sign-in and account management are provided by Clerk and are optional. Scores an
 
 ## Before Tomorrow
 
-The [Before Tomorrow practical companion](./before-tomorrow/) collects clearly labelled student preparation tips, questions, useful tools, and revision concepts. Its included content is fictional placeholder material until replaced with verified student contributions; it is not course guidance.
+The [Before Tomorrow practical companion](./before-tomorrow/) is a notebook for student-to-student practical tips, questions, useful tools, and revision concepts. It is ready for genuine student contributions; it is not a substitute for official course or safety guidance.
