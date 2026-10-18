@@ -23,7 +23,7 @@
   homeDescription.replaceChildren(questionCount, document.createTextNode(" practical questions to explore, plus a fresh daily mini practical."));
   const reassurance = document.createElement("div");
   reassurance.className = "demonstrator-note";
-  reassurance.innerHTML = '<span aria-hidden="true">🥼</span><p><b>The demonstrator says:</b> New here? Every answer includes an explanation. Choose Study mode in optional settings to practise without Trust penalties. Goggles remain non-negotiable, apparently.</p>';
+  reassurance.innerHTML = '<span aria-hidden="true">🥼</span><p><b>The demonstrator says:</b> Every answer explains why. Study mode skips Trust penalties. Goggles still required.</p>';
   welcome.append(reassurance);
   const lobbyContent = document.createElement("div");
   lobbyContent.className = "lobby-content";
@@ -130,7 +130,7 @@
     .mode-briefing-copy{max-width:42rem}
     @media(prefers-reduced-motion:no-preference){.welcome-banner,.daily,.round-settings{animation:lobby-arrive .45s ease-out both}@keyframes lobby-arrive{from{opacity:.65;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
     @media(max-width:480px){.round-controls{grid-template-columns:1fr}.round-control select{font-size:16px}}
-    @media(max-width:480px){.lobby-actions>*{width:100%;margin:0}.welcome-banner{padding:23px 20px}.demonstrator-note{font-size:14px}}
+    @media(max-width:480px){.lobby-actions>*{width:100%;margin:0}.welcome-banner{padding:20px 18px}.welcome-banner>p{margin-top:7px;font-size:15px}.demonstrator-note{gap:8px;margin-top:12px;padding:9px 11px;font-size:13px}.demonstrator-note>span{font-size:20px}}
   `;
   homeCard.classList.remove("hero");
   homeCard.classList.add("lobby");
@@ -762,7 +762,7 @@
 
   const accountStyles = document.createElement("style");
   accountStyles.textContent = `
-    .account-toolbar{position:sticky;top:8px;z-index:1000;display:flex;justify-content:flex-end;align-items:center;gap:10px;min-height:40px;margin:-10px 0 8px;pointer-events:none}
+    .account-toolbar{position:relative;display:flex;justify-content:flex-end;align-items:center;gap:10px;min-height:40px;margin:-10px 0 8px;pointer-events:none}
     .account-toolbar .account-actions,.account-toolbar #account-user-button{display:flex;align-items:center;gap:8px;pointer-events:auto}
     .account-toolbar [hidden]{display:none!important}
     .account-toolbar button{min-height:38px;padding:7px 12px;border:1px solid #c9dce8;border-radius:10px;background:#fff;color:#102a43;font:inherit;font-size:14px;font-weight:800;cursor:pointer;box-shadow:0 3px 12px #102a4315}
@@ -837,7 +837,7 @@
     if (message) {
       accountStatusTimer = window.setTimeout(() => {
         accountStatus.textContent = "";
-      }, 4500);
+      }, 3500);
     }
   }
 
@@ -1038,11 +1038,12 @@
         throw new Error("Your Clerk account's metadata is too close to its 8 KB limit to sync this progress.");
       }
 
-      if (JSON.stringify(remote) !== JSON.stringify(cloudProgress)) {
+      const progressChanged = JSON.stringify(remote) !== JSON.stringify(cloudProgress);
+      if (progressChanged) {
         await user.updateMetadata({ unsafeMetadata: { [syncedProgressField]: cloudProgress } });
         lastCloudWriteAt = Date.now();
+        showAccountStatus("Progress synced. The demonstrator has filed your clipboard under “not lost this time”.");
       }
-      showAccountStatus("Progress synced. The demonstrator has filed your clipboard under “not lost this time”.");
     } catch (error) {
       showAccountError(error);
     } finally {
