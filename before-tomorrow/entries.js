@@ -153,6 +153,15 @@ const BT_TASKS = [
     concepts: []
   },
   {
+    id: "bs1030-calculations-moles-solutions",
+    module: "bs1030",
+    area: "calculations",
+    order: 1,
+    title: "Moles, solutions & dilutions",
+    description: "Units, concentration, solution mass and dilution calculations.",
+    concepts: []
+  },
+  {
     id: "study-active-recall",
     module: "study-skills",
     area: "revision-exams",
@@ -671,5 +680,19 @@ const BT_ENTRIES = [
     kind: "The evening before",
     title: "Find the gaps before the exam finds them",
     body: "Try a few questions from memory, sketch a process or work a calculation without notes. Check your attempts, then use your time on the parts that tripped you up. Rereading everything can wait."
+  },
+  {
+    id: "bs1030-calculations-moles-solutions",
+    type: "note",
+    module: "bs1030",
+    area: "calculations",
+    task: "bs1030-calculations-moles-solutions",
+    concepts: [],
+    confidence: "personal",
+    year: 2026,
+    priority: 1,
+    kind: "Moles, concentrations and dilutions",
+    title: "A quick calculation bench guide",
+    body: "Keep units beside every value. Convert volume to litres before using molarity: 1 L = 1000 mL = 1 dm³.\n\nMoles: n = c × V, where c is in mol L⁻¹ and V is in L. Example: 0.20 mol L⁻¹ × 0.025 L = 0.0050 mol.\n\nMass for a target solution: mass (g) = concentration (mol L⁻¹) × final volume (L) × Mr (g mol⁻¹). Example: 0.10 mol L⁻¹ × 0.050 L × 180 g mol⁻¹ = 0.90 g.\n\nDilution: C₁V₁ = C₂V₂. For 100 mL of 0.20 mol L⁻¹ from 2.0 mol L⁻¹ stock, V₁ = (0.20 × 100) ÷ 2.0 = 10 mL; add solvent to a final volume of 100 mL.\n\nPercent concentrations: 10% w/v means 10 g per 100 mL final solution; 80% v/v means 80 mL liquid solute per 100 mL final solution. Common traps: use final volume, convert mL to L when calculating moles, and keep track of milli (10⁻³), micro (10⁻⁶), nano (10⁻⁹) and pico (10⁻¹²)."
   }
 ];

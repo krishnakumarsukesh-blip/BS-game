@@ -439,8 +439,8 @@
     if (challenge === "daily") {
       setStoryText(
         "TODAY'S MINI PRACTICAL",
-        "Five questions. One tiny lab coat.",
-        "Today's challenge is the same for everyone. Correct answers earn double competence; the demonstrator has hidden the answer key under a mug."
+        "Up to five questions. One tiny lab coat.",
+        "A fresh draw from a finite question bank, with no repeats on this device. Correct answers earn double competence; the demonstrator has hidden the answer key under a mug."
       );
       storyContinue.textContent = "🧠 Start today's challenge";
       storyContinue.onclick = () => begin("daily");
