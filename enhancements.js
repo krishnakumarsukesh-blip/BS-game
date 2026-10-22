@@ -13,6 +13,12 @@
   let campaignRoundChapter = 0;
   let clock = null;
   let remainingSeconds = 0;
+  const spacedReviewKey = "bs-game-spaced-reviews-v1";
+  let spacedSchedulerPromise;
+  let spacedRating;
+  let spacedReviews = loadSpacedReviews();
+  let spacedRoundIds = null;
+  let spacedDueTimer = null;
 
   const homeCard = document.querySelector("#home");
   const welcome = document.createElement("header");
@@ -121,6 +127,7 @@
     .round-control select{width:100%;min-height:44px;padding:9px;border:1px solid #d8e0e8;border-radius:9px;background:#fff;color:#142536;font:inherit}
     .round-note{grid-column:1/-1;margin:0;color:#526477}
     #reviewMissed{grid-column:1/-1;justify-self:start}
+    #spacedReview{grid-column:1/-1;justify-self:start}
     #roundClock{margin:0 0 10px;padding:9px 12px;border-radius:9px;background:#fff8dc;color:#142536;font-weight:850}
     #roundClock[hidden]{display:none}
     .demonstrator-verdict{padding:14px 16px;border-left:4px solid #f5c451;border-radius:0 10px 10px 0;background:#f5f8fb;color:#334e62}
@@ -293,6 +300,99 @@
   };
 
   const topicChoice = controls.querySelector("#topicChoice");
+
+  function loadSpacedReviews() {
+    try {
+      const value = JSON.parse(localStorage.getItem(spacedReviewKey) || "{}");
+      return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    } catch (error) {
+      console.warn("Could not read spaced review progress.", error);
+      return {};
+    }
+  }
+
+  function saveSpacedReviews() {
+    try {
+      localStorage.setItem(spacedReviewKey, JSON.stringify(spacedReviews));
+    } catch (error) {
+      console.warn("Could not save spaced review progress.", error);
+    }
+  }
+
+  function getSpacedScheduler() {
+    if (!spacedSchedulerPromise) {
+      spacedSchedulerPromise = import("https://esm.sh/ts-fsrs@6.0.0-beta.14")
+        .then(async module => {
+          spacedRating = module.Rating;
+          return module.DefaultScheduler({
+            version: "FSRS-6",
+            learningSteps: ["1m", "10m"],
+            relearningSteps: ["10m"],
+            enableFuzz: false
+          });
+        })
+        .catch(error => {
+          spacedSchedulerPromise = null;
+          throw error;
+        });
+    }
+    return spacedSchedulerPromise;
+  }
+
+  function reviewCard(id) {
+    const saved = spacedReviews[id];
+    if (!saved || !saved.card) return null;
+    const card = { ...saved.card };
+    ["due", "last_review"].forEach(field => {
+      if (card[field]) card[field] = new Date(card[field]);
+    });
+    return card;
+  }
+
+  function dueMissedQuestions() {
+    const now = Date.now();
+    return resit().filter(id => {
+      const card = reviewCard(id);
+      return !card || new Date(card.due).getTime() <= now;
+    });
+  }
+
+  const spacedReviewButton = document.createElement("button");
+  spacedReviewButton.id = "spacedReview";
+  spacedReviewButton.className = "next";
+  spacedReviewButton.type = "button";
+  spacedReviewButton.style.marginTop = "8px";
+  controls.querySelector("#reviewMissed").after(spacedReviewButton);
+
+  function updateSpacedReviewButton() {
+    const missedIds = resit();
+    const due = dueMissedQuestions().length;
+    const futureDue = missedIds.map(id => reviewCard(id)?.due)
+      .filter(Boolean)
+      .map(date => new Date(date).getTime())
+      .filter(time => Number.isFinite(time) && time > Date.now());
+    window.clearTimeout(spacedDueTimer);
+    spacedReviewButton.disabled = due === 0;
+    spacedReviewButton.textContent = due
+      ? `🧠 Spaced review · ${due} due now`
+      : `🧠 Spaced review · ${missedIds.length} missed question${missedIds.length === 1 ? "" : "s"} scheduled`;
+    spacedReviewButton.title = "FSRS spaced reviews are saved in this browser. Due questions become available automatically.";
+    if (futureDue.length) {
+      spacedDueTimer = window.setTimeout(
+        updateSpacedReviewButton,
+        Math.max(1000, Math.min(Math.min(...futureDue) - Date.now(), 2147483000))
+      );
+    }
+  }
+
+  spacedReviewButton.onclick = () => {
+    const due = new Set(dueMissedQuestions());
+    if (!due.size) return;
+    spacedRoundIds = [...due];
+    limit = 0;
+    reviewStudyNext = true;
+    showChallengeIntro("resit");
+  };
   const allTopics = [...new Set(Q.map(question => {
     const parts = question[0].split(" · ").slice(1);
     return parts.join(" · ") || "General lab skills";
@@ -366,6 +466,7 @@
   }
 
   updateRoundControls();
+  updateSpacedReviewButton();
 
   const originalHome = home;
   const originalShowStory = showStory;
@@ -481,6 +582,7 @@
     campaignActive = false;
     originalHome();
     updateRoundControls();
+    updateSpacedReviewButton();
   };
 
   begin = function (which, initialRep = 100) {
@@ -489,6 +591,17 @@
       activeChallenge = which;
       roundStyle = which === "resit" && reviewStudyNext ? "study" : "survival";
       reviewStudyNext = false;
+      if (which === "resit" && spacedRoundIds) {
+        const ids = spacedRoundIds;
+        spacedRoundIds = null;
+        const originalResit = resit;
+        resit = () => ids;
+        try {
+          return originalBegin(which, initialRep);
+        } finally {
+          resit = originalResit;
+        }
+      }
       return originalBegin(which, initialRep);
     }
 
@@ -567,6 +680,23 @@
       rep = Math.max(rep, 100);
     }
     originalAnswer(button, text, question);
+    if (!isCorrect || mode === "resit") {
+      getSpacedScheduler().then(scheduler => {
+        const now = new Date();
+        const card = reviewCard(question[1]) || scheduler.newCard({ now });
+        const result = scheduler.review({
+          card,
+          grade: isCorrect ? spacedRating.Good : spacedRating.Again,
+          now
+        });
+        spacedReviews[question[1]] = { card: result.card };
+        saveSpacedReviews();
+        updateSpacedReviewButton();
+      }).catch(error => {
+        console.error("Spaced review scheduling is unavailable.", error);
+        spacedReviewButton.title = "Spaced review could not load ts-fsrs. Check your connection and try again.";
+      });
+    }
     if (isStudy) {
       rep = reputationBeforeAnswer;
       document.querySelector("#rep").textContent = String(rep);

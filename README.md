@@ -11,6 +11,7 @@ Open `index.html` in a browser to play. To use Clerk sign-in and sync, serve the
 - Topic-filtered rounds with adjustable lengths.
 - Study mode without Trust penalties and Expert mode with a 30-second question timer.
 - A review folder for missed questions, topic feedback, achievements, and local progress transfer.
+- Optional FSRS spaced reviews for missed questions. Due reviews are available in the lobby, and the schedule is stored in this browser. Loading ts-fsrs requires an internet connection; other game modes continue to work if the library cannot load.
 - A calmer welcome lobby, optional settings, and short demonstrator briefings and sign-offs for each mode.
 - The three-chapter Missing-Label Mystery: short, repeatable investigation sessions where correct answers uncover clues and mistakes come with explanations instead of penalties. Story progress is saved locally, included in progress exports, and synced when signed in.
 
