@@ -179,6 +179,7 @@ const BADGES=[
 {id:"redeem",name:"🏆 Resit Redemption",desc:"Correctly answer 5 questions from your Re-sit folder"},
 {id:"banned",name:"💀 Banned From The Lab",desc:"Get ejected for reaching zero Trust"},
 ];
+window.BSGameQuestionBank=Q;
 function resit(){try{return JSON.parse(localStorage.getItem(RESIT)||"[]")}catch(e){return[]}}
 function setResit(a){try{localStorage.setItem(RESIT,JSON.stringify(a))}catch(e){}}
 function att(){try{return JSON.parse(localStorage.getItem(ATT)||"{}")}catch(e){return{}}}

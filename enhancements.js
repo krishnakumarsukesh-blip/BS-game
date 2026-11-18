@@ -393,20 +393,27 @@
     reviewStudyNext = true;
     showChallengeIntro("resit");
   };
-  const allTopics = [...new Set(Q.map(question => {
-    const parts = question[0].split(" · ").slice(1);
-    return parts.join(" · ") || "General lab skills";
-  }))].sort((a, b) => a.localeCompare(b));
-  const allOption = document.createElement("option");
-  allOption.value = "all";
-  allOption.textContent = "All benches";
-  topicChoice.append(allOption);
-  allTopics.forEach(topic => {
-    const option = document.createElement("option");
-    option.value = topic;
-    option.textContent = topic;
-    topicChoice.append(option);
-  });
+  function refreshTopicChoices() {
+    const selected = topicChoice.value;
+    const allTopics = [...new Set(Q.map(question => {
+      const parts = question[0].split(" · ").slice(1);
+      return parts.join(" · ") || "General lab skills";
+    }))].sort((a, b) => a.localeCompare(b));
+    topicChoice.replaceChildren();
+    const allOption = document.createElement("option");
+    allOption.value = "all";
+    allOption.textContent = "All benches";
+    topicChoice.append(allOption);
+    allTopics.forEach(topic => {
+      const option = document.createElement("option");
+      option.value = topic;
+      option.textContent = topic;
+      topicChoice.append(option);
+    });
+    topicChoice.value = allTopics.includes(selected) ? selected : "all";
+  }
+  refreshTopicChoices();
+  window.addEventListener("bs-game-question-bank-updated", refreshTopicChoices);
 
   const clockDisplay = document.createElement("p");
   clockDisplay.id = "roundClock";
@@ -1217,3 +1224,11 @@
 
   initializeClerk().catch(showAccountError);
 })();
+
+import("./pdf-mcq.mjs").catch(error => {
+  console.error("Could not load PDF question tools.", error);
+  const notice = document.createElement("section");
+  notice.className = "card";
+  notice.textContent = "PDF question tools could not load. The existing practical game is still available; serve the site over localhost or HTTPS and reload to try again.";
+  document.querySelector("#home").append(notice);
+});
